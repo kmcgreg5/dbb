@@ -157,7 +157,7 @@ void convertBuildReports(List<BuildResult> results) {
         BuildReport report = BuildReport.parse(result.getBuildReportData().getContent());
         report.generateHTML(html.toFile());
         result.setBuildReport(new FileInputStream(html.toFile()));
-        //result.save();
+        
         println("${result.getGroup()}:${result.getLabel()} converted.");
         Files.delete(html);
     }

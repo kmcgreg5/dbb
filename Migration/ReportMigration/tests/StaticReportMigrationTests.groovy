@@ -3,6 +3,7 @@ import com.ibm.dbb.metadata.MetadataStoreFactory;
 import com.ibm.dbb.metadata.BuildResult;
 import com.ibm.dbb.metadata.BuildResult.QueryParms;
 import com.ibm.dbb.EnvVars;
+import com.ibm.dbb.build.internal.Utils;
 
 import java.util.concurrent.TimeUnit;
 
