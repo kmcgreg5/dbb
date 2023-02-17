@@ -22,5 +22,5 @@ System.setProperty("test-pwFile", options.pwFile as String)
 // Cant figure out how to collect classes into a single test suite like the JUnit 4 style
 // A Nested central test class is the workaround
 GroovyClassLoader cloader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader())
-File testDir = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath()).getParent()
+File testDir = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath()).getParentFile()
 new JUnit5Runner().run(cloader.parseClass(new File(testDir, "StaticReportMigrationTest.groovy")), cloader)
