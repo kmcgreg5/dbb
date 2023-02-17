@@ -21,11 +21,21 @@ class StaticReportMigrationTests {
     static final String url = "someurl";
     static final String id = "someusr";
     static final File passwordFile = new File("somepwfile");*/
+    private final String urlKey = "test-url";
+    private final String idKey = "test-id";
+    private final String pwFileKey = "test-pwFile";
+    static final String group = "Static-Report-Migration-Test";
+    static final String label = "buildresult";
+
+    private static String url;
+    private static String id;
+    private static File passwordFile;
+    private static MetadataStore store;
 
     @Nested
     @TestInstance(Lifecycle.PER_CLASS)
     class IntegrationTests {
-        @BeforeAll
+        @BeforeEach
         void setup() throws IOException {
             //Set<PosixFilePermission> permissions = PosixFilePermissions.fromString("rwxr--r--");
             //Files.setPosixFilePermissions(Paths.get(script), permissions);
@@ -44,6 +54,24 @@ class StaticReportMigrationTests {
         //Set<PosixFilePermission> permissions = PosixFilePermissions.fromString("rwxr--r--");
         //Files.setPosixFilePermissions(Paths.get(script), permissions);
         System.out.println("SETUP Outer")
+        if (System.getProperties().containsKey(urlKey) == false) {
+            fail("Missing URL system property 'test-url'.")
+        }
+        if (System.getProperties().containsKey(idKey) == false) {
+            fail("Missing ID system property 'test-id'.")
+        }
+        if (System.getProperties().containsKey(pwFileKey) == false) {
+            fail("Missing Password File system property 'test-pwFile'.")
+        }
+
+        url = System.getProperty(urlKey)
+        id = System.getProperty(idKey)
+        passwordFile = new File(System.getProperty(pwFileKey))
+
+        store = MetadataStoreFactory.createDb2MetadataStore(url, id, passwordFile)
+    
+        println("SCRIPTDIR")
+        println(new File( StaticReportMigrationTests.getProtectionDomain().getCodeSource().getLocation().getPath() ).getAbsolutePath())
     }
 
     @Test
