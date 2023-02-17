@@ -82,7 +82,7 @@ class StaticReportMigrationTests {
             command.add("--pwFile");
             command.add(passwordFile.getPath());
             runMigrationScript(command);
-            validateResults(store);
+            validateResults();
         }
     }
 
