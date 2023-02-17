@@ -81,6 +81,8 @@ class StaticReportMigrationTests {
             command.add(id);
             command.add("--pwFile");
             command.add(passwordFile.getPath());
+            command.add("--groups");
+            command.add(GROUP);
             runMigrationScript(command);
             validateResults();
         }
