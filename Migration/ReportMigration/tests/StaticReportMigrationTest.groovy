@@ -25,9 +25,11 @@ class StaticReportMigrationTests {
     static final String url = "someurl";
     static final String id = "someusr";
     static final File passwordFile = new File("somepwfile");*/
-    private static final String urlKey = "test-url";
-    private static final String idKey = "test-id";
-    private static final String pwFileKey = "test-pwFile";
+    private static final String GROUP = "Report-Migration-Test";
+    private static final String LABEL = "buildresult";
+    private static final String URL_KEY = "test-url";
+    private static final String ID_KEY = "test-id";
+    private static final String PW_FILE_KEY = "test-pwFile";
     static final String group = "Static-Report-Migration-Test";
     static final String label = "buildresult";
 
@@ -44,6 +46,9 @@ class StaticReportMigrationTests {
             //Set<PosixFilePermission> permissions = PosixFilePermissions.fromString("rwxr--r--");
             //Files.setPosixFilePermissions(Paths.get(script), permissions);
             System.out.println("SETUP Inner")
+            println("SCRIPTDIR")
+            File testDir = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath()).getParentFile()
+            println(testDir)
         }
 
         @Test
@@ -58,24 +63,21 @@ class StaticReportMigrationTests {
         //Set<PosixFilePermission> permissions = PosixFilePermissions.fromString("rwxr--r--");
         //Files.setPosixFilePermissions(Paths.get(script), permissions);
         System.out.println("SETUP Outer")
-        if (System.getProperties().containsKey(urlKey) == false) {
-            fail("Missing URL system property 'test-url'.")
+        if (System.getProperties().containsKey(URL_KEY) == false) {
+            fail(String.format("Missing URL system property '%s'.", URL_KEY))
         }
-        if (System.getProperties().containsKey(idKey) == false) {
-            fail("Missing ID system property 'test-id'.")
+        if (System.getProperties().containsKey(ID_KEY) == false) {
+            fail(String.format("Missing ID system property '%s'.", ID_KEY))
         }
-        if (System.getProperties().containsKey(pwFileKey) == false) {
-            fail("Missing Password File system property 'test-pwFile'.")
+        if (System.getProperties().containsKey(PW_FILE_KEY) == false) {
+            fail(String.format("Missing Password File system property '%s'.", PW_FILE_KEY))
         }
 
-        url = System.getProperty(urlKey)
-        id = System.getProperty(idKey)
-        passwordFile = new File(System.getProperty(pwFileKey))
+        url = System.getProperty(URL_KEY)
+        id = System.getProperty(ID_KEY)
+        passwordFile = new File(System.getProperty(PW_FILE_KEY))
 
         store = MetadataStoreFactory.createDb2MetadataStore(url, id, passwordFile)
-    
-        println("SCRIPTDIR")
-        println(new File( StaticReportMigrationTests.getProtectionDomain().getCodeSource().getLocation().getPath() ).getAbsolutePath())
     }
 
     @Test
