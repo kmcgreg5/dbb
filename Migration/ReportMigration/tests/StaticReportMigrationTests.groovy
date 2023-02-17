@@ -125,7 +125,8 @@ class StaticReportMigrationTests {
         processBuilder.environment().put("DBB_HOME", EnvVars.getHome());
         
         Process process = processBuilder.start();
-        int rc = process.waitFor(1, TimeUnit.MINUTES);
+        assertTrue(process.waitFor(3, TimeUnit.MINUTES), "The migration process has timed out.");
+        int rc = process.exitValue();
         
         String errorMessage = String.format("Script return code is not equal to 0\nOUT:\n%s\n\nERR:\n%s", instreamToString(process.getInputStream()), instreamToString(process.getErrorStream()));
         assertEquals(0, rc, errorMessage);
