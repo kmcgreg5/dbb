@@ -1,8 +1,10 @@
 import com.ibm.dbb.metadata.MetadataStore;
 import com.ibm.dbb.metadata.MetadataStoreFactory;
+import com.ibm.dbb.metadata.BuildResult;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.DisplayName;
@@ -11,7 +13,7 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
-class StaticReportMigrationTests {
+class ReportMigrationTests {
     /*static final String testLocation = StaticReportMigrationTest.class.getProtectionDomain().getCodeSource().getLocation().getPath();
     static final String samplesFolder = "com/ibm/dbb/migration/samples/";
     static final String passwordFolder = "com/ibm/dbb/metadata/passwordUtilFiles/";
@@ -42,13 +44,21 @@ class StaticReportMigrationTests {
     @TestInstance(Lifecycle.PER_CLASS)
     class IntegrationTests {
         @BeforeEach
-        void setup() throws IOException {
+        void setupCollection() throws IOException {
             //Set<PosixFilePermission> permissions = PosixFilePermissions.fromString("rwxr--r--");
             //Files.setPosixFilePermissions(Paths.get(script), permissions);
-            System.out.println("SETUP Inner")
-            println("SCRIPTDIR")
-            File testDir = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath()).getParentFile()
-            println(testDir)
+            store.deleteBuildResults(GROUP);
+            store.deleteCollection(GROUP);
+
+            store.createCollection(GROUP);
+            BuildResult result = store.createBuildResult(GROUP, LABEL);
+            result.setState(BuildResult.COMPLETE);
+
+            File testDir = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath()).getParentFile();
+            String samplesFolder = "samples/";
+            // Report data is labled with the version used to create it, in case of differences between versions
+            result.setBuildReportData(new FileInputStream(new File(testDir, samplesFolder + "result-data-2.0.0.json")));
+            result.setBuildReport(new FileInputStream(new File(testDir, samplesFolder + "report.html")));
         }
 
         @Test
@@ -59,10 +69,9 @@ class StaticReportMigrationTests {
     }
 
     @BeforeAll
-    static void setup() throws IOException {
+    static void setupStore() throws IOException {
         //Set<PosixFilePermission> permissions = PosixFilePermissions.fromString("rwxr--r--");
         //Files.setPosixFilePermissions(Paths.get(script), permissions);
-        System.out.println("SETUP Outer")
         if (System.getProperties().containsKey(URL_KEY) == false) {
             fail(String.format("Missing URL system property '%s'.", URL_KEY))
         }
@@ -80,24 +89,18 @@ class StaticReportMigrationTests {
         store = MetadataStoreFactory.createDb2MetadataStore(url, id, passwordFile)
     }
 
-    @Test
-    void someTest() {
-        System.out.println("SOMETEST Outer")
-        fail("Somereason")
+    @AfterAll
+    static void cleanupStore() {
+        store.deleteBuildResults(GROUP);
+        store.deleteCollection(GROUP);
+    }
+
+    void validateResults() {
+        for (BuildResult result : store.getBuildResults(Collections.singletonMap(QueryParms.GROUP, GROUP))) {
+            assertFalse(Utils.readFromStream(result.getBuildReport().getContent(), "UTF-8").contains("</script>"), String.format("Result '%s:%s' not converted.", result.getGroup(), result.getLabel()));
+        }
     }
     /*
-    void setupResult(MetadataStore store) throws BuildException, FileNotFoundException {
-        store.deleteBuildResults(group);
-        store.deleteCollection(group);
-
-        store.createCollection(group);
-        BuildResult result = store.createBuildResult(group, label);
-        result.setState(BuildResult.COMPLETE);
-        // Report data is labled with the version used to create it, in case of differences between versions
-        result.setBuildReportData(new FileInputStream(new File(testLocation, samplesFolder + "result-data-2.0.0.json")));
-        result.setBuildReport(new FileInputStream(new File(testLocation, samplesFolder + "report.html")));
-    }
-
     @Test
     void testDB2Update2x() throws IOException, BuildException, InterruptedException {
         // create store

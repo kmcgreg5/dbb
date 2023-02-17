@@ -23,4 +23,4 @@ System.setProperty("test-pwFile", options.pwFile as String)
 // A Nested central test class is the workaround
 GroovyClassLoader cloader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader())
 File testDir = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath()).getParentFile()
-new JUnit5Runner().run(cloader.parseClass(new File(testDir, "StaticReportMigrationTest.groovy")), cloader)
+new JUnit5Runner().run(cloader.parseClass(new File(testDir, "ReportMigrationTests.groovy")), cloader)
