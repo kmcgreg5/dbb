@@ -2,7 +2,7 @@ import groovy.lang.GroovyClassLoader
 import groovy.junit5.plugin.JUnit5Runner
 import groovy.cli.commons.CliBuilder
 
-CliBuilder parser = new CliBuilder(usage:"$DBB_HOME/bin/groovyz test.groovy [options] [--help]")
+CliBuilder parser = new CliBuilder(usage:"\$DBB_HOME/bin/groovyz test.groovy [options] [--help]")
 parser.url(type:String, longOpt:'url', args:1, required:true, 'Test Db2 Metadata Store URL.')
 parser.id(type:String, longOpt:'id', args:1, required:true, 'Test Db2 user id.')
 parser.pwFile(type:File, longOpt:'pwFile', args:1, required:true, 'Test Db2 user password file.')
