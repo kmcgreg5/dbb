@@ -16,6 +16,9 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class StaticReportMigrationTests {
     /*static final String testLocation = StaticReportMigrationTest.class.getProtectionDomain().getCodeSource().getLocation().getPath();
