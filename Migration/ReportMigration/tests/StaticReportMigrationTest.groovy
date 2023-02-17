@@ -1,4 +1,5 @@
 import com.ibm.dbb.metadata.MetadataStore;
+import com.ibm.dbb.metadata.MetadataStoreFactory;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,9 +25,9 @@ class StaticReportMigrationTests {
     static final String url = "someurl";
     static final String id = "someusr";
     static final File passwordFile = new File("somepwfile");*/
-    private final String urlKey = "test-url";
-    private final String idKey = "test-id";
-    private final String pwFileKey = "test-pwFile";
+    private static final String urlKey = "test-url";
+    private static final String idKey = "test-id";
+    private static final String pwFileKey = "test-pwFile";
     static final String group = "Static-Report-Migration-Test";
     static final String label = "buildresult";
 
