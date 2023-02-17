@@ -36,13 +36,11 @@ class StaticReportMigrationTests {
     static final String url = "someurl";
     static final String id = "someusr";
     static final File passwordFile = new File("somepwfile");*/
-    private static final String GROUP = "Report-Migration-Test";
+    private static final String GROUP = "Static-Report-Migration-Test";
     private static final String LABEL = "buildresult";
     private static final String URL_KEY = "test-url";
     private static final String ID_KEY = "test-id";
     private static final String PW_FILE_KEY = "test-pwFile";
-    static final String group = "Static-Report-Migration-Test";
-    static final String label = "buildresult";
 
     private File testDir = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath()).getParentFile();
 
@@ -145,6 +143,8 @@ class StaticReportMigrationTests {
 			buffer.append(line);
 			buffer.append('\n');
 		}
-		return new String(buffer);
+        String output = new String(buffer);
+        System.out.println(output);
+		return output;
 	}
 }
