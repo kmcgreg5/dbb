@@ -118,11 +118,13 @@ class StaticReportMigrationTests {
         String output;
         String error;
         try {
-            assertTrue(process.waitFor(3, TimeUnit.MINUTES), "The migration process has timed out.");
+            boolean success = process.waitFor(3, TimeUnit.MINUTES);
+            
             int rc = process.exitValue();
             
             output = instreamToString(process.getInputStream());
             error = instreamToString(process.getErrorStream());
+            assertTrue(success, "The migration process has timed out.");
             String errorMessage = String.format("Script return code is not equal to 0\nOUT:\n%s\n\nERR:\n%s", output, error);
             assertEquals(0, rc, errorMessage);
         } finally {
