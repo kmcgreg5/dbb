@@ -159,7 +159,8 @@ class StaticReportMigrationTests {
             
             elapsedTime = System.currentTimeMillis() - startTime;
             System.out.println(String.format("Elapsed Time: %s", elapsedTime / 1000));
-            Thread.sleep(100);
+            Thread.sleep(1000);
+            System.out.println("End sleep.");
         }
 
         System.out.println(output);
