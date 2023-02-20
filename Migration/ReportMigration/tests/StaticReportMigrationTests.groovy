@@ -23,19 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class StaticReportMigrationTests {
-    /*static final String testLocation = StaticReportMigrationTest.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-    static final String samplesFolder = "com/ibm/dbb/migration/samples/";
-    static final String passwordFolder = "com/ibm/dbb/metadata/passwordUtilFiles/";
-    
-    static final String group = "Static-Report-Migration-Test";
-    static final String label = "buildresult";
-    static final String dbbHome = new File(testLocation, "../../DBBZtoolkitUnit").getAbsolutePath();
-    static final String script = new File(testLocation, "../sample/report-migration/static-report-migration.groovy").getAbsolutePath();
-    static final String testLibs = testLocation + "lib/db2jcc4.jar:" + testLocation + "lib/db2jcc_license_cisuz.jar";
-
-    static final String url = "someurl";
-    static final String id = "someusr";
-    static final File passwordFile = new File("somepwfile");*/
     private static final String GROUP = "Static-Report-Migration-Test";
     private static final String LABEL = "buildresult";
     private static final String URL_KEY = "test-url";
@@ -54,8 +41,6 @@ class StaticReportMigrationTests {
     class IntegrationTests {
         @BeforeEach
         void setupCollection() throws IOException {
-            //Set<PosixFilePermission> permissions = PosixFilePermissions.fromString("rwxr--r--");
-            //Files.setPosixFilePermissions(Paths.get(script), permissions);
             store.deleteBuildResults(GROUP);
             store.deleteCollection(GROUP);
 
@@ -130,11 +115,21 @@ class StaticReportMigrationTests {
         processBuilder.environment().put("DBB_HOME", EnvVars.getHome());
         
         Process process = processBuilder.start();
-        assertTrue(process.waitFor(3, TimeUnit.MINUTES), "The migration process has timed out.");
-        int rc = process.exitValue();
+        String output;
+        String error;
+        try {
+            assertTrue(process.waitFor(3, TimeUnit.MINUTES), "The migration process has timed out.");
+            int rc = process.exitValue();
+            
+            output = instreamToString(process.getInputStream());
+            error = instreamToString(process.getErrorStream());
+            String errorMessage = String.format("Script return code is not equal to 0\nOUT:\n%s\n\nERR:\n%s", output, error);
+            assertEquals(0, rc, errorMessage);
+        finally {
+            System.out.println(output);
+            System.out.println(error);
+        }
         
-        String errorMessage = String.format("Script return code is not equal to 0\nOUT:\n%s\n\nERR:\n%s", instreamToString(process.getInputStream()), instreamToString(process.getErrorStream()));
-        assertEquals(0, rc, errorMessage);
     }
 
     private String instreamToString(InputStream is) throws IOException {
