@@ -41,6 +41,7 @@ class StaticReportMigrationTests {
     class IntegrationTests {
         @BeforeEach
         void setupCollection() throws IOException {
+            System.out.println("Setting up result.");
             store.deleteBuildResults(GROUP);
             store.deleteCollection(GROUP);
 
@@ -56,6 +57,7 @@ class StaticReportMigrationTests {
 
         @Test
         void someTest() {
+            System.out.println("Running test.");
             String script = new File(testDir, "../bin/static-report-migration.sh").getPath();
 
             List<String> command = new ArrayList<>();
@@ -77,6 +79,7 @@ class StaticReportMigrationTests {
     static void setupStore() throws IOException {
         //Set<PosixFilePermission> permissions = PosixFilePermissions.fromString("rwxr--r--");
         //Files.setPosixFilePermissions(Paths.get(script), permissions);
+        System.out.println("Setting up store.");
         if (System.getProperties().containsKey(URL_KEY) == false) {
             fail(String.format("Missing URL system property '%s'.", URL_KEY))
         }
@@ -96,11 +99,13 @@ class StaticReportMigrationTests {
 
     @AfterAll
     static void cleanupStore() {
+        System.out.println("Cleaning up store.");
         store.deleteBuildResults(GROUP);
         store.deleteCollection(GROUP);
     }
 
     private void validateResults() {
+        System.out.println("Validating results.");
         for (BuildResult result : store.getBuildResults(Collections.singletonMap(QueryParms.GROUP, GROUP))) {
             assertFalse(Utils.readFromStream(result.getBuildReport().getContent(), "UTF-8").contains("</script>"), String.format("Result '%s:%s' not converted.", result.getGroup(), result.getLabel()));
         }
@@ -117,8 +122,9 @@ class StaticReportMigrationTests {
         Process process = processBuilder.start();
         String output;
         String error;
-
+        System.out.println("Waiting for process.");
         boolean success = process.waitFor(3, TimeUnit.MINUTES);
+        System.out.println("Process finished");
         output = instreamToString(process.getInputStream());
         error = instreamToString(process.getErrorStream());
         if (success == false) process.destroyForcibly();
