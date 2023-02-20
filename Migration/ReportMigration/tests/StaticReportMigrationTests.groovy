@@ -119,11 +119,10 @@ class StaticReportMigrationTests {
         ProcessBuilder processBuilder = new ProcessBuilder(command);
         processBuilder.environment().put("DBB_HOME", EnvVars.getHome());
         System.out.println("Waiting for process.");
+        
         Process process = processBuilder.start();
-
         long startTime = System.currentTimeMillis();
         long maxTime = 3 * 60 * 1000; // Minutes (3) -> MS
-
         BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
         BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()));
         char[] buffer = new char[16*1024];
@@ -131,6 +130,7 @@ class StaticReportMigrationTests {
         StringBuilder input = new StringBuilder();
         StringBuilder error = new StringBuilder();
         long elapsedTime = 0;
+        System.out.println("Entering loop.");
         while (elapsedTime < maxTime) {
             if (stdInput.ready()) {
                 System.out.println("Reading Input.");
@@ -147,6 +147,7 @@ class StaticReportMigrationTests {
             elapsedTime = System.currentTimeMillis() - startTime;
             System.out.println(String.format("Elapsed Time: %s", elapsedTime / 1000));
         }
+
         System.out.println(output);
         System.out.println(error);
         process.destroy();
