@@ -127,7 +127,7 @@ class StaticReportMigrationTests {
         BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()));
         char[] buffer = new char[16*1024];
 
-        StringBuilder input = new StringBuilder();
+        StringBuilder output = new StringBuilder();
         StringBuilder error = new StringBuilder();
         long elapsedTime = 0;
         System.out.println("Entering loop.");
@@ -136,7 +136,7 @@ class StaticReportMigrationTests {
                 System.out.println("Reading Input.");
                 int charsRead = stdInput.read(buffer);
                 String newString = new String(buffer, 0, charsRead);
-                input.append(newString);
+                output.append(newString);
                 if (newString.toLowerCase().contains("('y' or 'n')")) {
                     System.out.println("Sending confirmation.");
                     BufferedWriter out = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
@@ -152,7 +152,7 @@ class StaticReportMigrationTests {
                 System.out.println("Exiting.");
                 break;
             }
-            System.out.println(input);
+            System.out.println(output);
             System.out.println(error);
             elapsedTime = System.currentTimeMillis() - startTime;
             System.out.println(String.format("Elapsed Time: %s", elapsedTime / 1000));
