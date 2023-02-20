@@ -6,6 +6,7 @@ import com.ibm.dbb.EnvVars;
 import com.ibm.dbb.build.internal.Utils;
 
 import java.util.concurrent.TimeUnit;
+import java.lang.Thread;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
@@ -158,6 +159,7 @@ class StaticReportMigrationTests {
             
             elapsedTime = System.currentTimeMillis() - startTime;
             System.out.println(String.format("Elapsed Time: %s", elapsedTime / 1000));
+            Thread.sleep(100);
         }
 
         System.out.println(output);
