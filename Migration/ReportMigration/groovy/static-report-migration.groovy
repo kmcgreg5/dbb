@@ -36,19 +36,22 @@ if (results.size() == 0) {
 } else {
     print("You are about to convert ${results.size()} reports. Would you like to proceed ('y' or 'n'): ")
     // Works where there is no Console instance
-    String response = System.in.newReader().readLine().trim().toLowerCase();
+    BufferedReader reader = System.in.newReader();
+    String response = reader.readLine().trim().toLowerCase();
     if (response.equals("y") || response.equals("yes")) {
         connectionScript.convertBuildReports(results);
     }
+
+    print("You are about to convert ${results.size()} reports. Would you like to proceed ('y' or 'n'): ")
+    // Works where there is no Console instance
+    response = reader.readLine().trim().toLowerCase();
+    if (response.equals("y") || response.equals("yes")) {
+        //connectionScript.convertBuildReports(results);
+        println("passed.")
+    }
 }
 
-print("You are about to convert ${results.size()} reports. Would you like to proceed ('y' or 'n'): ")
-// Works where there is no Console instance
-String response = System.in.newReader().readLine().trim().toLowerCase();
-if (response.equals("y") || response.equals("yes")) {
-    //connectionScript.convertBuildReports(results);
-    println("passed.")
-}
+
 
 println("Success");
 
