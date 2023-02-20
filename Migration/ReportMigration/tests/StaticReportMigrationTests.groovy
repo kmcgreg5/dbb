@@ -135,7 +135,11 @@ class StaticReportMigrationTests {
             if (stdInput.ready()) {
                 System.out.println("Reading Input.");
                 int charsRead = stdInput.read(buffer);
-                input.append(buffer, 0, charsRead);
+                String newString = new String(buffer, 0, charsRead);
+                input.append(newString);
+                if (newString.contains("('y' or 'n')")) {
+                    process.getOutputStream().write("y\n".getBytes());
+                }
             } else if (stdError.ready()) {
                 System.out.println("Reading Error.");
                 int charsRead = stdError.read(buffer);
