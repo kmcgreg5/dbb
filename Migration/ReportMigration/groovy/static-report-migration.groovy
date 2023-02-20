@@ -34,7 +34,7 @@ connectionScript.filterBuildResults(results);
 if (results.size() == 0) {
     println("No non-static build reports found.")
 } else {
-    print("You are about to convert ${results.size()} reports. Would you like to proceed ('y' or 'n'): ")
+    println("You are about to convert ${results.size()} reports. Would you like to proceed ('y' or 'n'): ")
     // Works where there is no Console instance
     BufferedReader reader = System.in.newReader();
     String response = reader.readLine().trim().toLowerCase();
@@ -43,7 +43,7 @@ if (results.size() == 0) {
         connectionScript.convertBuildReports(results);
     }
 
-    print("You are about to convert ${results.size()} reports. Would you like to proceed ('y' or 'n'): ")
+    println("You are about to convert ${results.size()} reports. Would you like to proceed ('y' or 'n'): ")
     response = reader.readLine().trim().toLowerCase();
     if (response.equals("y") || response.equals("yes")) {
         println("passed 2.")
