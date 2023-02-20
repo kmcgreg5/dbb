@@ -41,6 +41,7 @@ if (results.size() == 0) {
     if (response.equals("y") || response.equals("yes")) {
         println("passed 1.")
         connectionScript.convertBuildReports(results);
+        println("Finished conversion");
     }
 
     println("You are about to convert ${results.size()} reports. Would you like to proceed ('y' or 'n'): ")
