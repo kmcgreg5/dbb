@@ -137,6 +137,7 @@ class StaticReportMigrationTests {
                 int charsRead = stdInput.read(buffer);
                 String newString = new String(buffer, 0, charsRead);
                 output.append(newString);
+                System.out.println("NEW STRING: " + newString);
                 if (newString.toLowerCase().contains("('y' or 'n')")) {
                     System.out.println("Sending confirmation.");
                     BufferedWriter out = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
