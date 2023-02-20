@@ -119,7 +119,7 @@ class StaticReportMigrationTests {
         String error;
         try {
             boolean success = process.waitFor(3, TimeUnit.MINUTES);
-            
+            if (success == false) process.destroyForcibly();
             int rc = process.exitValue();
             
             output = instreamToString(process.getInputStream());
