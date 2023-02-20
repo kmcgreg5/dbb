@@ -137,7 +137,7 @@ class StaticReportMigrationTests {
                 int charsRead = stdInput.read(buffer);
                 String newString = new String(buffer, 0, charsRead);
                 input.append(newString);
-                if (newString.contains("('y' or 'n')")) {
+                if (newString.toLowerCase().contains("('y' or 'n')")) {
                     process.getOutputStream().write("y\n".getBytes());
                 }
             } else if (stdError.ready()) {
