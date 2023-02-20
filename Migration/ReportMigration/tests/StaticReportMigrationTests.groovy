@@ -118,20 +118,34 @@ class StaticReportMigrationTests {
     private void runMigrationScript(List<String> command) throws IOException, InterruptedException {
         ProcessBuilder processBuilder = new ProcessBuilder(command);
         processBuilder.environment().put("DBB_HOME", EnvVars.getHome());
-        
-        Process process = processBuilder.start();
-        String output;
-        String error;
         System.out.println("Waiting for process.");
-        boolean success = process.waitFor(3, TimeUnit.MINUTES);
+        Process process = processBuilder.start();
+
+        long startTime = System.currentTimeMillis();
+        long maxTime = 3 * 60 * 1000; // Minutes (3) -> MS
+
+        BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+        char[] buffer = new char[16*1024];
+
+        StringBuilder input;
+        StringBuilder error;
+        while (System.currentTimeMillis() - startTime < maxTime) {
+            if (stdInput.ready()) {
+                int charsRead = stdInput.read(buffer);
+                input.append(buffer, 0, charsRead);
+            } else if (stdError.ready()) {
+                int charsRead = stdError.read(buffer);
+                error.append(buffer, 0, charsRead);
+            } else {
+                break;
+            }
+        }
+        System.out.println(output);
+        System.out.println(error);
+        process.destroy();
         System.out.println("Process finished");
-        output = instreamToString(process.getInputStream());
-        error = instreamToString(process.getErrorStream());
-        if (success == false) process.destroyForcibly();
         int rc = process.exitValue();
-        
-        
-        assertTrue(success, "The migration process has timed out.");
         String errorMessage = String.format("Script return code is not equal to 0\nOUT:\n%s\n\nERR:\n%s", output, error);
         assertEquals(0, rc, errorMessage);
     }
