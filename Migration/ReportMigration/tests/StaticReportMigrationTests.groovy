@@ -133,6 +133,7 @@ class StaticReportMigrationTests {
         long elapsedTime = 0;
         System.out.println("Entering loop.");
         while (elapsedTime < maxTime) {
+            System.out.println("At the top.");
             if (stdInput.ready()) {
                 System.out.println("Reading Input.");
                 int charsRead = stdInput.read(buffer);
