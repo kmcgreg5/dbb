@@ -130,7 +130,8 @@ class StaticReportMigrationTests {
 
         StringBuilder input = new StringBuilder();
         StringBuilder error = new StringBuilder();
-        while (System.currentTimeMillis() - startTime < maxTime) {
+        long elapsedTime = 0;
+        while (elapsedTime < maxTime) {
             if (stdInput.ready()) {
                 int charsRead = stdInput.read(buffer);
                 input.append(buffer, 0, charsRead);
@@ -140,6 +141,8 @@ class StaticReportMigrationTests {
             } else {
                 break;
             }
+            elapsedTime = System.currentTimeMillis() - startTime;
+            System.out.println(String.format("Elapsed Time: %s", elapsedTime / 1000));
         }
         System.out.println(output);
         System.out.println(error);
