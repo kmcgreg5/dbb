@@ -125,7 +125,7 @@ class StaticReportMigrationTests {
             error = instreamToString(process.getErrorStream());
             String errorMessage = String.format("Script return code is not equal to 0\nOUT:\n%s\n\nERR:\n%s", output, error);
             assertEquals(0, rc, errorMessage);
-        finally {
+        } finally {
             System.out.println(output);
             System.out.println(error);
         }
