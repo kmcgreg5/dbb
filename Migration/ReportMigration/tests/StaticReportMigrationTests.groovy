@@ -144,6 +144,8 @@ class StaticReportMigrationTests {
                 System.out.println("Exiting.");
                 break;
             }
+            System.out.println(output);
+            System.out.println(error);
             elapsedTime = System.currentTimeMillis() - startTime;
             System.out.println(String.format("Elapsed Time: %s", elapsedTime / 1000));
         }
