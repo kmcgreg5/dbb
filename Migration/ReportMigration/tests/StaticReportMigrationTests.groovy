@@ -128,8 +128,8 @@ class StaticReportMigrationTests {
         BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()));
         char[] buffer = new char[16*1024];
 
-        StringBuilder input;
-        StringBuilder error;
+        StringBuilder input = new StringBuilder();
+        StringBuilder error = new StringBuilder();
         while (System.currentTimeMillis() - startTime < maxTime) {
             if (stdInput.ready()) {
                 int charsRead = stdInput.read(buffer);
