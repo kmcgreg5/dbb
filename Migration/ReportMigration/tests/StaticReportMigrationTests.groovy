@@ -140,8 +140,7 @@ class StaticReportMigrationTests {
                 if (newString.toLowerCase().contains("('y' or 'n')")) {
                     System.out.println("Sending confirmation.");
                     BufferedWriter out = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
-                    out.write("y");
-                    out.write("\n");
+                    out.write("y\n\n");
                     out.flush();
                 }
             } else if (stdError.ready()) {
