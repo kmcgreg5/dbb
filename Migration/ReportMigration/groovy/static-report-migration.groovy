@@ -41,17 +41,7 @@ if (results.size() == 0) {
         println("passed 1.")
         connectionScript.convertBuildReports(results);
     }
-
-    print("You are about to convert ${results.size()} reports. Would you like to proceed ('y' or 'n'): ")
-    // Works where there is no Console instance
-    response = System.in.newReader().readLine().trim().toLowerCase();
-    if (response.equals("y") || response.equals("yes")) {
-        //connectionScript.convertBuildReports(results);
-        println("passed 2.")
-    }
 }
-
-
 
 println("Success");
 
