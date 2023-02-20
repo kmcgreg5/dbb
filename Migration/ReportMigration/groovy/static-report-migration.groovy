@@ -38,6 +38,7 @@ if (results.size() == 0) {
     // Works where there is no Console instance
     String response = System.in.newReader().readLine().trim().toLowerCase();
     if (response.equals("y") || response.equals("yes")) {
+        println("passed 1."))
         connectionScript.convertBuildReports(results);
     }
 
@@ -46,7 +47,7 @@ if (results.size() == 0) {
     response = System.in.newReader().readLine().trim().toLowerCase();
     if (response.equals("y") || response.equals("yes")) {
         //connectionScript.convertBuildReports(results);
-        println("passed.")
+        println("passed 2.")
     }
 }
 
