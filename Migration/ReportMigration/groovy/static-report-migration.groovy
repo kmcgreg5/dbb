@@ -44,7 +44,7 @@ if (results.size() == 0) {
     }
 
     print("You are about to convert ${results.size()} reports. Would you like to proceed ('y' or 'n'): ")
-    String response = reader.readLine().trim().toLowerCase();
+    response = reader.readLine().trim().toLowerCase();
     if (response.equals("y") || response.equals("yes")) {
         println("passed 2.")
         //connectionScript.convertBuildReports(results);
