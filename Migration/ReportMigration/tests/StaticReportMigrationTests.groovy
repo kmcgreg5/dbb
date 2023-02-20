@@ -141,19 +141,21 @@ class StaticReportMigrationTests {
                 if (newString.toLowerCase().contains("('y' or 'n')")) {
                     System.out.println("Sending confirmation.");
                     BufferedWriter out = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
-                    out.write("y\n");
+                    out.write("y");
+                    out.newLine();
                     out.flush();
                 }
+                System.out.println("OUTPUT: " + output.toString());
             } else if (stdError.ready()) {
                 System.out.println("Reading Error.");
                 int charsRead = stdError.read(buffer);
                 error.append(buffer, 0, charsRead);
+                System.out.println("ERROR: " + error.toString());
             } else {
                 System.out.println("Exiting.");
                 break;
             }
-            System.out.println(output);
-            System.out.println(error);
+            
             elapsedTime = System.currentTimeMillis() - startTime;
             System.out.println(String.format("Elapsed Time: %s", elapsedTime / 1000));
         }
