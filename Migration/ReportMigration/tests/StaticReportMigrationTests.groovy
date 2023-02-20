@@ -117,21 +117,17 @@ class StaticReportMigrationTests {
         Process process = processBuilder.start();
         String output;
         String error;
-        try {
-            boolean success = process.waitFor(3, TimeUnit.MINUTES);
-            if (success == false) process.destroyForcibly();
-            int rc = process.exitValue();
-            
-            output = instreamToString(process.getInputStream());
-            error = instreamToString(process.getErrorStream());
-            assertTrue(success, "The migration process has timed out.");
-            String errorMessage = String.format("Script return code is not equal to 0\nOUT:\n%s\n\nERR:\n%s", output, error);
-            assertEquals(0, rc, errorMessage);
-        } finally {
-            System.out.println(output);
-            System.out.println(error);
-        }
+
+        boolean success = process.waitFor(3, TimeUnit.MINUTES);
+        output = instreamToString(process.getInputStream());
+        error = instreamToString(process.getErrorStream());
+        if (success == false) process.destroyForcibly();
+        int rc = process.exitValue();
         
+        
+        assertTrue(success, "The migration process has timed out.");
+        String errorMessage = String.format("Script return code is not equal to 0\nOUT:\n%s\n\nERR:\n%s", output, error);
+        assertEquals(0, rc, errorMessage);
     }
 
     private String instreamToString(InputStream is) throws IOException {
