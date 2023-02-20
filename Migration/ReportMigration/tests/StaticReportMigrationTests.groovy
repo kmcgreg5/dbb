@@ -141,7 +141,7 @@ class StaticReportMigrationTests {
                     System.out.println("Sending confirmation.");
                     BufferedWriter out = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
                     out.flush();
-                    out.write("y\n");
+                    out.write("y\r\n");
                     out.flush();
                 }
             } else if (stdError.ready()) {
