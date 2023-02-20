@@ -133,12 +133,15 @@ class StaticReportMigrationTests {
         long elapsedTime = 0;
         while (elapsedTime < maxTime) {
             if (stdInput.ready()) {
+                System.out.println("Reading Input.");
                 int charsRead = stdInput.read(buffer);
                 input.append(buffer, 0, charsRead);
             } else if (stdError.ready()) {
+                System.out.println("Reading Error.");
                 int charsRead = stdError.read(buffer);
                 error.append(buffer, 0, charsRead);
             } else {
+                System.out.println("Exiting.");
                 break;
             }
             elapsedTime = System.currentTimeMillis() - startTime;
