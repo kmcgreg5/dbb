@@ -142,6 +142,7 @@ class StaticReportMigrationTests {
                     BufferedWriter out = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
                     out.write("y\n");
                     out.flush();
+                    out.close();
                 }
             } else if (stdError.ready()) {
                 System.out.println("Reading Error.");
