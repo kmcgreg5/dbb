@@ -125,7 +125,6 @@ class StaticReportMigrationTests {
         long startTime = System.currentTimeMillis();
         long maxTime = 3 * 60 * 1000; // Minutes (3) -> MS
         BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()));
         char[] buffer = new char[16*1024];
 
         StringBuilder output = new StringBuilder();
@@ -159,7 +158,7 @@ class StaticReportMigrationTests {
             System.out.println(String.format("Elapsed Time: %s", elapsedTime / 1000));
         }
 
-        String error = instreamToString(stdError);
+        String error = instreamToString(process.getErrorStream());
 
         System.out.println("ERROR: " + error.toString());
             
