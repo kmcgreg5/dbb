@@ -20,7 +20,6 @@ if (!versionUtils.isVersionOver(version, mostAcceptableVersion)) {
 
 def connectionScript = loadScript(new File("connection-2.x.groovy"));
 
-
 // Parse arguments and instantiate client
 if (!connectionScript.parseArgsInstantiate(args, version)) {
     System.exit(2);
@@ -37,8 +36,7 @@ if (results.size() == 0) {
 } else {
     println("You are about to convert ${results.size()} reports. Would you like to proceed ('y' or 'n'): ")
     // Works where there is no Console instance
-    BufferedReader reader = System.in.newReader();
-    String response = reader.readLine().trim().toLowerCase();
+    String response = System.in.newReader().readLine().trim().toLowerCase();
     if (response.equals("y") || response.equals("yes")) {
         connectionScript.convertBuildReports(results);
         println("Finished conversion.");
