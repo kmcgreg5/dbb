@@ -164,4 +164,17 @@ class StaticReportMigrationTests {
         
 		return new String(buffer);
 	}
+
+    @Test
+    void someTest() {
+
+        List<String> commandList = new ArrayList<>();
+        commandList.add("$DBB_HOME/bin/groovyz")
+        commandList.add("-e")
+        commandList.add("println 'Hello world'")
+        long startTime = System.currentTimeMillis();
+        runMigrationScript(commandList);
+        println("ELAPSED TIME");
+        println(System.currentTimeMillis() - startTime);
+    }
 }
