@@ -7,13 +7,13 @@ import com.ibm.dbb.build.VersionInfo;
 String leastAcceptableVersion = "2.0.0";
 String mostAcceptableVersion = "3.0.0";
 String version = VersionInfo.getInstance().getVersion();
-if (!versionUtils.isVersionUnder(version, leastAcceptableVersion)) {
+if (true || !versionUtils.isVersionUnder(version, leastAcceptableVersion)) {
     println(String.format("DBB Version %s is not compatable with this tool, please upgrade to version >= %s", version, leastAcceptableVersion));
-    return 1;
+    System.exit(1);
 }
 if (!versionUtils.isVersionOver(version, mostAcceptableVersion)) {
     println(String.format("DBB Version %s is not compatable with this tool, please use the version of this tool compatable with DBB 3.x", version));
-    return 1;
+    System.exit(1);
 }
 
 
@@ -22,7 +22,7 @@ def connectionScript = loadScript(new File("connection-2.x.groovy"));
 
 // Parse arguments and instantiate client
 if (!connectionScript.parseArgsInstantiate(args, version)) {
-    return 1;
+    System.exit(2);
 }
 
 // Ensure tagging on generated html files
@@ -45,5 +45,3 @@ if (results.size() == 0) {
         println("Conversion skipped.");
     }
 }
-
-return 0;
