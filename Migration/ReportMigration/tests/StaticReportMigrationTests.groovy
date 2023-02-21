@@ -129,7 +129,6 @@ class StaticReportMigrationTests {
         char[] buffer = new char[16*1024];
 
         StringBuilder output = new StringBuilder();
-        StringBuilder error = new StringBuilder();
         long elapsedTime = 0;
         System.out.println("Entering loop.");
         while (elapsedTime < maxTime) {
@@ -154,21 +153,16 @@ class StaticReportMigrationTests {
             }
             System.out.println("OUTPUT: " + output.toString());
             
-            System.out.println("Reading Error.");
-            charsRead = stdError.read(buffer);
-            if (charsRead == -1) {
-                System.out.println("Exiting, Stderr");
-                break;
-            }
-
-            error.append(buffer, 0, charsRead);
-            System.out.println("ERROR: " + error.toString());
-            
             Thread.sleep(1000);
             System.out.println("End sleep.");
             elapsedTime = System.currentTimeMillis() - startTime;
             System.out.println(String.format("Elapsed Time: %s", elapsedTime / 1000));
         }
+
+        String error = instreamToString(stdError);
+
+        System.out.println("ERROR: " + error.toString());
+            
 
         System.out.println(output);
         System.out.println(error);
