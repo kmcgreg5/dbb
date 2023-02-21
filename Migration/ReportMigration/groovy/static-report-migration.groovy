@@ -8,7 +8,7 @@ import groovy.transform.Field;
 String leastAcceptableVersion = "2.0.0";
 String mostAcceptableVersion = "3.0.0";
 String version = VersionInfo.getInstance().getVersion();
-if (true || !versionUtils.isVersionUnder(version, leastAcceptableVersion)) {
+if (!versionUtils.isVersionUnder(version, leastAcceptableVersion)) {
     println(String.format("DBB Version %s is not compatable with this tool, please upgrade to version >= %s", version, leastAcceptableVersion));
     System.exit(1);
 }
