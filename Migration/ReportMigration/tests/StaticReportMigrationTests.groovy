@@ -155,7 +155,7 @@ class StaticReportMigrationTests {
             System.out.println("OUTPUT: " + output.toString());
             
             System.out.println("Reading Error.");
-            int charsRead = stdError.read(buffer);
+            charsRead = stdError.read(buffer);
             if (charsRead == -1) {
                 System.out.println("Exiting, Stderr");
                 break;
