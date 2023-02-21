@@ -169,7 +169,7 @@ class StaticReportMigrationTests {
     void someTest() {
 
         List<String> commandList = new ArrayList<>();
-        commandList.add("${EnvVars.getHome()}/bin/groovyz")
+        commandList.add(EnvVars.getHome() + "/bin/groovyz")
         commandList.add("-e")
         commandList.add("println 'Hello world'")
         long startTime = System.currentTimeMillis();
