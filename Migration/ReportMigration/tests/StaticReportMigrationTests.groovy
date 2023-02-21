@@ -167,14 +167,15 @@ class StaticReportMigrationTests {
 
     @Test
     void someTest() {
-
-        List<String> commandList = new ArrayList<>();
-        commandList.add(EnvVars.getHome() + "/bin/groovyz")
-        commandList.add("-e")
-        commandList.add("println 'Hello world'")
-        long startTime = System.currentTimeMillis();
-        runMigrationScript(commandList);
-        println("ELAPSED TIME");
-        println(System.currentTimeMillis() - startTime);
+        for (1..10) {
+            List<String> commandList = new ArrayList<>();
+            commandList.add(EnvVars.getHome() + "/bin/groovyz")
+            commandList.add("-e")
+            commandList.add("println 'Hello world'")
+            long startTime = System.currentTimeMillis();
+            runMigrationScript(commandList);
+            println("ELAPSED TIME");
+            println(System.currentTimeMillis() - startTime);
+        }
     }
 }
