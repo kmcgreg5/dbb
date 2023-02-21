@@ -7,7 +7,6 @@ import com.ibm.dbb.build.internal.Utils;
 
 import java.util.concurrent.TimeUnit;
 import java.lang.Thread;
-import java.security.Permission;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
@@ -15,7 +14,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 
@@ -144,38 +142,17 @@ class StaticReportMigrationTests {
             Thread.sleep(1000);
         }
 
-        String error = instreamToString(process.getErrorStream()).trim();
+        StringBuilder error = new StringBuilder();
+        BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+        while ((String line = stdError.readLine()) != null) {
+            error.append(line);
+            error.append("\n");
+        }
         process.destroy();
         
         int rc = process.exitValue();
         String errorMessage = String.format("Script return code is not equal to 0\nOUT:\n%s\n\nERR:\n%s", output, error);
         assertEquals(0, rc, errorMessage);
         assertTrue(error.isEmpty());
-    }
-
-    private String instreamToString(InputStream is) throws IOException {
-		StringBuilder buffer = new StringBuilder();
-		BufferedReader br = new BufferedReader(new InputStreamReader(is));
-		String line;
-		while ((line = br.readLine()) != null) {
-			buffer.append(line);
-			buffer.append('\n');
-		}
-        
-		return new String(buffer);
-	}
-
-    @Test
-    void someTest() {
-        for (int i=0;i<10;i++) {
-            List<String> commandList = new ArrayList<>();
-            commandList.add(EnvVars.getHome() + "/bin/groovyz")
-            commandList.add("-e")
-            commandList.add("println 'Hello world'")
-            long startTime = System.currentTimeMillis();
-            runMigrationScript(commandList);
-            println("ELAPSED TIME");
-            println(System.currentTimeMillis() - startTime);
-        }
     }
 }
