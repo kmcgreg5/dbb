@@ -1,6 +1,7 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
 
 import com.ibm.dbb.build.VersionInfo;
+import groovy.transform.Field;
 
 @Field def versionUtils = loadScript(new File("check-version.groovy"));
 
