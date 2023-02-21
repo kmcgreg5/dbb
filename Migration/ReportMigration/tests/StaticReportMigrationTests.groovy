@@ -167,7 +167,7 @@ class StaticReportMigrationTests {
 
     @Test
     void someTest() {
-        for (1..10) {
+        for (int i=0;i<10;i++) {
             List<String> commandList = new ArrayList<>();
             commandList.add(EnvVars.getHome() + "/bin/groovyz")
             commandList.add("-e")
