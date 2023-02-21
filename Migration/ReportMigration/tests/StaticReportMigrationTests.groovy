@@ -165,33 +165,4 @@ class StaticReportMigrationTests {
         System.out.println(output);
 		return output;
 	}
-
-    public static void forbidSystemExitCall() {
-        System.setSecurityManager( new CatchExitSecurityManager() ) ;
-    }
-
-    public static void enableSystemExitCall() {
-        System.setSecurityManager( null ) ;
-    }
-
-    public static class CatchExitSecurityManager extends SecurityManager {
-		public CatchExitSecurityManager() {
-			super();
-		}
-		
-		// catch all System.exit calls and throw a SecurityException with the RC in the message
-		public void checkExit(int status) {
-			throw new SecurityException("__RC="+status+"__");
-		}
-		
-        @Override
-        public void checkPermission(Permission perm) {
-            return; 
-        }
-
-        @Override
-        public void checkPermission(Permission perm, Object context) {
-            return; 
-        }
-	}
 }
