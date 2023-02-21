@@ -57,7 +57,7 @@ class StaticReportMigrationTests {
         }
 
         @Test
-        void someTest() {
+        void migrationTest() {
             System.out.println("Running test.");
             String script = new File(testDir, "../bin/static-report-migration.sh").getPath();
 
@@ -119,57 +119,37 @@ class StaticReportMigrationTests {
     private void runMigrationScript(List<String> command) throws IOException, InterruptedException {
         ProcessBuilder processBuilder = new ProcessBuilder(command);
         processBuilder.environment().put("DBB_HOME", EnvVars.getHome());
-        System.out.println("Waiting for process.");
         
         Process process = processBuilder.start();
         long startTime = System.currentTimeMillis();
         long maxTime = 3 * 60 * 1000; // Minutes (3) -> MS
         BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        BufferedWriter stdOut = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
         char[] buffer = new char[16*1024];
 
         StringBuilder output = new StringBuilder();
-        long elapsedTime = 0;
-        System.out.println("Entering loop.");
-        while (elapsedTime < maxTime) {
-            System.out.println("At the top.");
-            
-            System.out.println("Reading Input.");
+        while (System.currentTimeMillis() - startTime < maxTime) {
             int charsRead = stdInput.read(buffer);
-            if (charsRead == -1) {
-                System.out.println("Exiting, Stdin");
-                break;
-            }
+            if (charsRead == -1) break;
             
             String newString = new String(buffer, 0, charsRead);
             output.append(newString);
-            System.out.println("NEW STRING: " + newString);
             if (newString.toLowerCase().contains("('y' or 'n')")) {
-                System.out.println("Sending confirmation.");
-                BufferedWriter out = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
-                out.write("y");
-                out.newLine();
-                out.flush();
+                stdOut.write("y");
+                stdOut.newLine();
+                stdOut.flush();
             }
-            System.out.println("OUTPUT: " + output.toString());
             
             Thread.sleep(1000);
-            System.out.println("End sleep.");
-            elapsedTime = System.currentTimeMillis() - startTime;
-            System.out.println(String.format("Elapsed Time: %s", elapsedTime / 1000));
         }
 
-        String error = instreamToString(process.getErrorStream());
-
-        System.out.println("ERROR: " + error.toString());
-            
-
-        System.out.println(output);
-        System.out.println(error);
+        String error = instreamToString(process.getErrorStream()).trim();
         process.destroy();
-        System.out.println("Process finished");
+        
         int rc = process.exitValue();
         String errorMessage = String.format("Script return code is not equal to 0\nOUT:\n%s\n\nERR:\n%s", output, error);
         assertEquals(0, rc, errorMessage);
+        assertTrue(error.isEmpty())
     }
 
     private String instreamToString(InputStream is) throws IOException {

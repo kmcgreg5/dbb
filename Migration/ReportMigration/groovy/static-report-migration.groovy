@@ -1,17 +1,17 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
 
 import com.ibm.dbb.build.VersionInfo;
-// TODO: Seperate steps to generate a list of the build groups and process it.
-// TODO: Seperate version checking to check-version.groovy
-// TODO: 
+
+@Field def versionUtils = loadScript(new File("check-version.groovy"));
+
 String leastAcceptableVersion = "2.0.0";
 String mostAcceptableVersion = "3.0.0";
 String version = VersionInfo.getInstance().getVersion();
-if (!isVersionUnder(version, leastAcceptableVersion)) {
+if (!versionUtils.isVersionUnder(version, leastAcceptableVersion)) {
     println(String.format("DBB Version %s is not compatable with this tool, please upgrade to version >= %s", version, leastAcceptableVersion));
     return 1;
 }
-if (!isVersionOver(version, mostAcceptableVersion)) {
+if (!versionUtils.isVersionOver(version, mostAcceptableVersion)) {
     println(String.format("DBB Version %s is not compatable with this tool, please use the version of this tool compatable with DBB 3.x", version));
     return 1;
 }
@@ -39,74 +39,11 @@ if (results.size() == 0) {
     BufferedReader reader = System.in.newReader();
     String response = reader.readLine().trim().toLowerCase();
     if (response.equals("y") || response.equals("yes")) {
-        println("passed 1.")
         connectionScript.convertBuildReports(results);
-        println("Finished conversion");
-    }
-
-    println("You are about to convert ${results.size()} reports. Would you like to proceed ('y' or 'n'): ")
-    response = reader.readLine().trim().toLowerCase();
-    if (response.equals("y") || response.equals("yes")) {
-        println("passed 2.")
-        //connectionScript.convertBuildReports(results);
+        println("Finished conversion.");
+    } else {
+        println("Conversion skipped.");
     }
 }
 
-println("Success");
-
-
-/****************************
-**  Utility                **
-*****************************/
-
-boolean isVersionUnder(String version, String leastVersion) {
-    int[] versionArr = Arrays.stream(version.split("\\.")).mapToInt(Integer::parseInt).toArray();
-    int[] leastAcceptableVersion = Arrays.stream(leastVersion.split("\\.")).mapToInt(Integer::parseInt).toArray(); // Inclusive
-    
-
-    // malformed version, expecting at most 3 version values
-    if (versionArr.length > 3) return false;
-    if (leastAcceptableVersion.length > 3) return false;
-
-    // Ensure versions are of equal length
-    while (versionArr.length < 3) {
-        versionArr.append(0);
-    }
-    while (leastAcceptableVersion.length < 3) {
-        leastAcceptableVersion.append(0)
-    }
-    
-    // Reject for least acceptable version
-    if (versionArr[0] < leastAcceptableVersion[0]) return false;
-    if (versionArr[0] == leastAcceptableVersion[0]) {
-        if (versionArr[1] < leastAcceptableVersion[1]) return false;
-        if (versionArr[1] == leastAcceptableVersion[1] && versionArr[2] < leastAcceptableVersion[2]) return false;
-    }
-
-    return true;
-}
-
-boolean isVersionOver(String version, String mostVersion) {
-    int[] versionArr = Arrays.stream(version.split("\\.")).mapToInt(Integer::parseInt).toArray();
-    int[] mostAcceptableVersion = Arrays.stream(mostVersion.split("\\.")).mapToInt(Integer::parseInt).toArray(); // Non-inclusive
-
-    // malformed version, expecting at most 3 version values
-    if (versionArr.length > 3) return false;
-    if (mostAcceptableVersion.length > 3) return false;
-
-    // Ensure versions are of equal length
-    while (versionArr.length < 3) {
-        versionArr.append(0);
-    }
-    while (mostAcceptableVersion.length < 3) {
-        mostAcceptableVersion.append(0)
-    }
-
-    // Reject for most acceptable version
-    if (versionArr[0] > mostAcceptableVersion[0]) return false;
-    if (versionArr[0] == mostAcceptableVersion[0]) {
-        if (versionArr[1] > mostAcceptableVersion[1]) return false;
-        if (versionArr[1] == mostAcceptableVersion[1] && versionArr[2] >= mostAcceptableVersion[2]) return false;
-    }
-    return true;
-}
+return 0;
