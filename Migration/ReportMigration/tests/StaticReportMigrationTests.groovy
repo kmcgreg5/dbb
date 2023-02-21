@@ -83,20 +83,20 @@ class StaticReportMigrationTests {
         //Files.setPosixFilePermissions(Paths.get(script), permissions);
         System.out.println("Setting up store.");
         if (System.getProperties().containsKey(URL_KEY) == false) {
-            fail(String.format("Missing URL system property '%s'.", URL_KEY))
+            fail(String.format("Missing URL system property '%s'.", URL_KEY));
         }
         if (System.getProperties().containsKey(ID_KEY) == false) {
-            fail(String.format("Missing ID system property '%s'.", ID_KEY))
+            fail(String.format("Missing ID system property '%s'.", ID_KEY));
         }
         if (System.getProperties().containsKey(PW_FILE_KEY) == false) {
-            fail(String.format("Missing Password File system property '%s'.", PW_FILE_KEY))
+            fail(String.format("Missing Password File system property '%s'.", PW_FILE_KEY));
         }
 
-        url = System.getProperty(URL_KEY)
-        id = System.getProperty(ID_KEY)
-        passwordFile = new File(System.getProperty(PW_FILE_KEY))
+        url = System.getProperty(URL_KEY);
+        id = System.getProperty(ID_KEY);
+        passwordFile = new File(System.getProperty(PW_FILE_KEY));
 
-        store = MetadataStoreFactory.createDb2MetadataStore(url, id, passwordFile)
+        store = MetadataStoreFactory.createDb2MetadataStore(url, id, passwordFile);
     }
 
     @AfterAll
@@ -150,7 +150,7 @@ class StaticReportMigrationTests {
         int rc = process.exitValue();
         String errorMessage = String.format("Script return code is not equal to 0\nOUT:\n%s\n\nERR:\n%s", output, error);
         assertEquals(0, rc, errorMessage);
-        assertTrue(error.isEmpty())
+        assertTrue(error.isEmpty());
     }
 
     private String instreamToString(InputStream is) throws IOException {
@@ -161,8 +161,7 @@ class StaticReportMigrationTests {
 			buffer.append(line);
 			buffer.append('\n');
 		}
-        String output = new String(buffer);
-        System.out.println(output);
-		return output;
+        
+		return new String(buffer);
 	}
 }
