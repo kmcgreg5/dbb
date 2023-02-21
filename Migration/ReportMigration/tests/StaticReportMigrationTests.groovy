@@ -134,34 +134,40 @@ class StaticReportMigrationTests {
         System.out.println("Entering loop.");
         while (elapsedTime < maxTime) {
             System.out.println("At the top.");
-            if (stdInput.ready()) {
-                System.out.println("Reading Input.");
-                int charsRead = stdInput.read(buffer);
-                String newString = new String(buffer, 0, charsRead);
-                output.append(newString);
-                System.out.println("NEW STRING: " + newString);
-                if (newString.toLowerCase().contains("('y' or 'n')")) {
-                    System.out.println("Sending confirmation.");
-                    BufferedWriter out = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
-                    out.write("y");
-                    out.newLine();
-                    out.flush();
-                }
-                System.out.println("OUTPUT: " + output.toString());
-            } else if (stdError.ready()) {
-                System.out.println("Reading Error.");
-                int charsRead = stdError.read(buffer);
-                error.append(buffer, 0, charsRead);
-                System.out.println("ERROR: " + error.toString());
-            } else {
-                System.out.println("Exiting.");
+            
+            System.out.println("Reading Input.");
+            int charsRead = stdInput.read(buffer);
+            if (charsRead == -1) {
+                System.out.println("Exiting, Stdin");
                 break;
             }
             
-            elapsedTime = System.currentTimeMillis() - startTime;
-            System.out.println(String.format("Elapsed Time: %s", elapsedTime / 1000));
+            String newString = new String(buffer, 0, charsRead);
+            output.append(newString);
+            System.out.println("NEW STRING: " + newString);
+            if (newString.toLowerCase().contains("('y' or 'n')")) {
+                System.out.println("Sending confirmation.");
+                BufferedWriter out = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
+                out.write("y");
+                out.newLine();
+                out.flush();
+            }
+            System.out.println("OUTPUT: " + output.toString());
+            
+            System.out.println("Reading Error.");
+            int charsRead = stdError.read(buffer);
+            if (charsRead == -1) {
+                System.out.println("Exiting, Stderr");
+                break;
+            }
+
+            error.append(buffer, 0, charsRead);
+            System.out.println("ERROR: " + error.toString());
+            
             Thread.sleep(1000);
             System.out.println("End sleep.");
+            elapsedTime = System.currentTimeMillis() - startTime;
+            System.out.println(String.format("Elapsed Time: %s", elapsedTime / 1000));
         }
 
         System.out.println(output);
