@@ -7,6 +7,7 @@ import com.ibm.dbb.metadata.BuildResult.QueryParms;
 import com.ibm.dbb.build.report.BuildReport;
 import com.ibm.dbb.build.BuildProperties;
 import com.ibm.dbb.build.internal.Utils;
+import com.ibm.dbb.build.BuildException;
 
 import groovy.transform.Field;
 import java.nio.file.Path;
@@ -17,6 +18,11 @@ import org.apache.commons.cli.Option;
 
 @Field MetadataStore client = null;
 @Field List<String> groups = new ArrayList<>();
+@Field boolean debug = false;
+@Field Class ScriptException;
+GroovyClassLoader cloader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader());
+File testDir = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath()).getParentFile();
+ScriptException = cloader.parseClass(new File(testDir, "ScriptException.groovy"));
 
 /****************************
 **  Argument Parsing       **
@@ -38,14 +44,15 @@ boolean parseArgsInstantiate(String[] args, String version) {
     // Group 2
     OptionGroup groupGroup = new OptionGroup();
     groupGroup.setRequired(true);
-    groupGroup.addOption(parser.option("grp", [longOpt:"groups", args:Option.UNLIMITED_VALUES, valueSeparator:','], "A comma seperated list of groups."));
-    groupGroup.addOption(parser.option("grpf", [type:File, longOpt:"groupsFile", args:1], "A file containing groups seperated by new lines."));
+    groupGroup.addOption(parser.option("grp", [longOpt:"grp", args:Option.UNLIMITED_VALUES, valueSeparator:','], "A comma seperated list of groups."));
+    groupGroup.addOption(parser.option("grpf", [type:File, longOpt:"grpf", args:1], "A file containing groups seperated by new lines."));
 
     // One required but not mutually exclusive. URL can overwrite props "url" property.
     parser.url(type:String, longOpt:'url', args:1, 'Db2 Metadata Store URL. Example: jdbc:db2:<Db2 server location>');
     parser.props(type:File, longOpt:'properties', args:1, 'Db2 Metadata Store connection properties.');
 
-    parser.help(longOpt:"help", 'Prints this message.')
+    parser.help(longOpt:"help", 'Prints this message.');
+    parser.debug(longOpt:"debug", 'Prints entries that are skipped.');
     
     // Should not display any output, just used to validate positional arguments
     parser.options.addOptionGroup(passwordGroup)
@@ -62,6 +69,8 @@ boolean parseArgsInstantiate(String[] args, String version) {
         return false;
     }
 
+    if (options.debug) debug = true;
+
     if (options.props) {
         Properties props = new Properties();
         props.load(options.props);
@@ -72,7 +81,7 @@ boolean parseArgsInstantiate(String[] args, String version) {
         if (options.pw) {
             setClient(options.id, options.pw, props);
         } else {
-            setClient(options.id, options.pwFile, props);
+            setClient(options.id, options.pwFile as File, props);
         }
     } else {
         if (options.pw) {
@@ -114,19 +123,19 @@ void setGroups(List<String> groupsArg, File groupsFileArg) {
 
 // Db2 Metadata Store instantiation
 void setClient(String url, String id, String password) {
-    client = MetadataStoreFactory.createDb2MetadataStore(url, id, password);
+    client = exceptionClosure {MetadataStoreFactory.createDb2MetadataStore(url, id, password) };
 }
 
 void setClient(String url, String id, File passwordFile) {
-    client = MetadataStoreFactory.createDb2MetadataStore(url, id, passwordFile);
+    client = exceptionClosure {MetadataStoreFactory.createDb2MetadataStore(url, id, passwordFile) };
 }
 
 void setClient(String id, String password, Properties properties) {
-    client = MetadataStoreFactory.createDb2MetadataStore(url, id, properties);
+    client = exceptionClosure {MetadataStoreFactory.createDb2MetadataStore(url, id, properties) };
 }
 
 void setClient(String id, File passwordFile, Properties properties) {
-    client = MetadataStoreFactory.createDb2MetadataStore(url, passwordFile, properties);
+    client = exceptionClosure {MetadataStoreFactory.createDb2MetadataStore(url, passwordFile, properties) };
 }
 
 /****************************
@@ -141,24 +150,70 @@ List<BuildResult> getBuildResults() {
     // Multiple requests to avoid excess memory usage by returning all and then filtering
     List<BuildResult> results = new ArrayList<>();
     for (String group : groups) {
-        results.addAll(client.getBuildResults(Collections.singletonMap(QueryParms.GROUP, group)));
+        results.addAll( exceptionClosure {client.getBuildResults(Collections.singletonMap(QueryParms.GROUP, group)) });
     }
     return results;
 }
 
 void filterBuildResults(List<BuildResult> results) {
-    results.removeIf(result->!Utils.readFromStream(result.getBuildReport().getContent(), "UTF-8").contains("</script>"));
+    results.removeIf(result-> { // IO, Build
+        String content = exceptionClosure {Utils.readFromStream(result.getBuildReport().getContent(), "UTF-8") };
+        if (content == null) {
+            if (debug) {
+                System.out.println(String.format("Result '%s:%s' has no content... Skipping.", result.getGroup(), result.getLabel()));
+            }
+            return true;
+        } else if (content.contains("</script>") == false) {
+            if (debug) {
+                System.out.println(String.format("Result '%s:%s' has no script tag... Skipping.", result.getGroup(), result.getLabel()));
+            }
+            return true;
+        }
+        return false;
+    });
 }
 
 void convertBuildReports(List<BuildResult> results) {
     for (BuildResult result : results) {
         Path html = Files.createTempFile("dbb-report-mig", ".html");
-        
-        BuildReport report = BuildReport.parse(result.getBuildReportData().getContent());
-        report.generateHTML(html.toFile());
-        result.setBuildReport(new FileInputStream(html.toFile()));
-        
-        println("${result.getGroup()}:${result.getLabel()} converted.");
+        exceptionClosure { //IO, Build
+            BuildReport report = BuildReport.parse(result.getBuildReportData().getContent());
+            report.generateHTML(html.toFile());
+            result.setBuildReport(new FileInputStream(html.toFile()));
+        }
+        System.out.println("${result.getGroup()}:${result.getLabel()} converted.");
         Files.delete(html);
     }
+}
+
+
+/****************************
+**  Utilities              **
+*****************************/
+
+def exceptionClosure(Closure closure) {
+    try {
+        closure()
+    } catch (BuildException error) {
+        String message;
+        Throwable root = getRootCause(error);
+        if (root instanceof FileNotFoundException) {
+            message = String.format("There was an issue reading your password file: '%s'", root.getMessage());
+        } else {
+            message = String.format("There was an issue connecting to the MetadataStore: '%s'", error.getMessage());
+        }
+        
+        throw new ScriptException(message);
+    } catch (IOException error) {
+        // Unexplained because exceptions have no one discernable source/cause
+        String message = String.format("There was an unexpected exception: '%s'", error.getMessage());
+        throw new ScriptException(message);
+    }
+}
+
+Throwable getRootCause(Throwable rootCause) {
+    while (rootCause.getCause() != null && rootCause.getCause() != rootCause) {
+        rootCause = rootCause.getCause();
+    }
+    return rootCause;
 }
