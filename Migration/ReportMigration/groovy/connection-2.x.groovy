@@ -200,7 +200,7 @@ def exceptionClosure(Closure closure) {
         if (root instanceof FileNotFoundException) {
             message = String.format("There was an issue reading your password file: '%s'", root.getMessage());
         } else {
-            message = String.format("There was an issue connecting to the MetadataStore: '%s'", error.getMessage());
+            message = String.format("There was an issue connecting to the Metadata Store: '%s'", error.getMessage());
         }
         
         throw new ScriptException(message);

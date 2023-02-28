@@ -29,7 +29,8 @@ class StaticReportMigrationTests {
     private static final String ID_KEY = "test-id";
     private static final String PW_FILE_KEY = "test-pwFile";
 
-    private File testDir = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath()).getParentFile();
+    private static File testDir = new File(StaticReportMigrationTests.getProtectionDomain().getCodeSource().getLocation().getPath()).getParentFile();
+    private static String script = new File(testDir, "../bin/static-report-migration.sh").getPath();
 
     private static String url;
     private static String id;
@@ -40,8 +41,8 @@ class StaticReportMigrationTests {
     @TestInstance(Lifecycle.PER_CLASS)
     class IntegrationTests {
         @BeforeEach
-        void setupCollection() throws IOException {
-            System.out.println("Setting up result.");
+        void setupCollection() throws Exception {
+            System.out.println("Setting up collection.");
             store.deleteBuildResults(GROUP);
             store.deleteCollection(GROUP);
 
@@ -53,13 +54,23 @@ class StaticReportMigrationTests {
             // Report data is labled with the version used to create it, in case of differences between versions
             result.setBuildReportData(new FileInputStream(new File(testDir, samplesFolder + "result-data-2.0.0.json")));
             result.setBuildReport(new FileInputStream(new File(testDir, samplesFolder + "report.html")));
+
+            System.out.println("Asserting test file content.");
+            String htmlString = '{"date":"28-Feb-2022 17:26:26","build":"151","id":"DBB API Version","type":"VERSION","version":"1.1.3"}';
+            String dataString = '{"date":"06-Dec-2022 17:13:58","build":"113","id":"DBB API Version","type":"VERSION","version":"2.0.0"}';
+            List<BuildResult> results = store.getBuildResults(Collections.singletonMap(QueryParms.GROUP, GROUP));
+            for (BuildResult result : results) {
+                assertEquals(GROUP, result.getGroup());
+                assertEquals(LABEL, result.getLabel());
+                assertTrue(Utils.readFromStream(result.getBuildReport().getContent(), "UTF-8").contains(htmlString));
+                assertTrue(Utils.readFromStream(result.getBuildReportData().getContent(), "UTF-8").contains(dataString));
+            }
+            assertTrue(results.size() == 1);
         }
 
         @Test
         void migrationTest() {
             System.out.println("Running test.");
-            String script = new File(testDir, "../bin/static-report-migration.sh").getPath();
-
             List<String> command = new ArrayList<>();
             command.add(script);
             command.add("--url");
@@ -68,17 +79,50 @@ class StaticReportMigrationTests {
             command.add(id);
             command.add("--pwFile");
             command.add(passwordFile.getPath());
-            command.add("--groups");
+            command.add("--grp");
             command.add(GROUP);
-            runMigrationScript(command);
+            Map<String, String> output = runMigrationScript(command, 0);
+            assertTrue(output.get("err").trim().isEmpty(), String.format("Error stream is not empty\nOUT:\n%s\n\nERR:\n%s", output.get("out"), output.get("err")));
             validateResults();
+        }
+
+        @Test
+        void badPasswordFileTest() {
+            System.out.println("Running bad password file test.");
+            List<String> command = new ArrayList<>();
+            command.add(script);
+            command.add("--url");
+            command.add(url);
+            command.add("--id");
+            command.add(id);
+            command.add("--pwFile");
+            command.add("~/nonexistantfile");
+            command.add("--grp");
+            command.add(GROUP);
+            Map<String, String> output = runMigrationScript(command, 2);
+            assertTrue(output.get("out").contains("There was an issue reading your password file"));
+        }
+
+        @Test
+        void badPasswordTest() {
+            System.out.println("Running bad password test.");
+            List<String> command = new ArrayList<>();
+            command.add(script);
+            command.add("--url");
+            command.add(url);
+            command.add("--id");
+            command.add(id);
+            command.add("--pw");
+            command.add("BADPASSWORD");
+            command.add("--grp");
+            command.add(GROUP);
+            Map<String, String> output = runMigrationScript(command, 2);
+            assertTrue(output.get("out").contains("There was an issue connecting to the Metadata Store"));
         }
     }
 
     @BeforeAll
-    static void setupStore() throws IOException {
-        //Set<PosixFilePermission> permissions = PosixFilePermissions.fromString("rwxr--r--");
-        //Files.setPosixFilePermissions(Paths.get(script), permissions);
+    static void setupStore() throws Exception {
         System.out.println("Setting up store.");
         if (System.getProperties().containsKey(URL_KEY) == false) {
             fail(String.format("Missing URL system property '%s'.", URL_KEY));
@@ -106,16 +150,18 @@ class StaticReportMigrationTests {
 
     private void validateResults() {
         System.out.println("Validating results.");
-        for (BuildResult result : store.getBuildResults(Collections.singletonMap(QueryParms.GROUP, GROUP))) {
-            assertFalse(Utils.readFromStream(result.getBuildReport().getContent(), "UTF-8").contains("</script>"), String.format("Result '%s:%s' not converted.", result.getGroup(), result.getLabel()));
+        for (BuildResult result : client.getAllBuildResults(Collections.singletonMap(RepositoryClient.GROUP, GROUP))) {
+            String content = Utils.readFromStream(result.getBuildReport().getContent(), "UTF-8");
+            assertTrue(content.contains('<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">'), String.format("Result data '%s%s' not readable, bad encoding likely.", result.getGroup(), result.getLabel()));
+            assertFalse(content.contains("</script>"), String.format("Result '%s:%s' not converted.", result.getGroup(), result.getLabel()));
         }
     }
 
-    private void runMigrationScript(String command) throws IOException, InterruptedException {
-        runMigrationScript(Arrays.asList(command.split(" ")));
+    private Map<String, String> runMigrationScript(String command) throws IOException, InterruptedException {
+        return runMigrationScript(Arrays.asList(command.split(" ")));
     }
 
-    private void runMigrationScript(List<String> command) throws IOException, InterruptedException {
+    private Map<String, String> runMigrationScript(List<String> command) throws IOException, InterruptedException {
         ProcessBuilder processBuilder = new ProcessBuilder(command);
         processBuilder.environment().put("DBB_HOME", EnvVars.getHome());
         
@@ -152,9 +198,15 @@ class StaticReportMigrationTests {
         process.destroy();
         
         int rc = process.exitValue();
-        String errorMessage = String.format("Script return code is not equal to 0\nOUT:\n%s\n\nERR:\n%s", output, error);
-        assertEquals(0, rc, errorMessage);
         String errorString = error.toString();
-        assertTrue(errorString.trim().isEmpty(), String.format("Error stream not empty: %s", errorString));
+        String outputString = output.toString();
+
+        assertEquals(expectedRC, rc, String.format("Script return code is not equal to %s\nOUT:\n%s\n\nERR:\n%s", expectedRC, outputString, errorString));
+        
+        Map<String, String> returnMap = new HashMap<>();
+        returnMap.put("rc", rc);
+        returnMap.put("out", outputString);
+        returnMap.put("err", errorString);
+        return returnMap;
     }
 }
