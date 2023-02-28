@@ -70,7 +70,7 @@ class StaticReportMigrationTests {
 
         @Test
         void migrationTest() {
-            System.out.println("Running test.");
+            System.out.println("Running migration test.");
             List<String> command = new ArrayList<>();
             command.add(script);
             command.add("--url");
@@ -100,6 +100,7 @@ class StaticReportMigrationTests {
             command.add("--grp");
             command.add(GROUP);
             Map<String, String> output = runMigrationScript(command, 2);
+            println("OUT:\n" + output.get("out") + "\n\nERR:\n" + output.get("err"));
             assertTrue(output.get("out").contains("There was an issue reading your password file"));
         }
 
@@ -150,7 +151,7 @@ class StaticReportMigrationTests {
 
     private void validateResults() {
         System.out.println("Validating results.");
-        for (BuildResult result : client.getAllBuildResults(Collections.singletonMap(RepositoryClient.GROUP, GROUP))) {
+        for (BuildResult result : store.getBuildResults(Collections.singletonMap(QueryParms.GROUP, GROUP))) {
             String content = Utils.readFromStream(result.getBuildReport().getContent(), "UTF-8");
             assertTrue(content.contains('<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">'), String.format("Result data '%s%s' not readable, bad encoding likely.", result.getGroup(), result.getLabel()));
             assertFalse(content.contains("</script>"), String.format("Result '%s:%s' not converted.", result.getGroup(), result.getLabel()));
