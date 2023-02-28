@@ -47,13 +47,13 @@ class StaticReportMigrationTests {
             store.deleteCollection(GROUP);
 
             store.createCollection(GROUP);
-            BuildResult result = store.createBuildResult(GROUP, LABEL);
-            result.setState(BuildResult.COMPLETE);
+            BuildResult newResult = store.createBuildResult(GROUP, LABEL);
+            newResult.setState(BuildResult.COMPLETE);
 
             String samplesFolder = "samples/";
             // Report data is labled with the version used to create it, in case of differences between versions
-            result.setBuildReportData(new FileInputStream(new File(testDir, samplesFolder + "result-data-2.0.0.json")));
-            result.setBuildReport(new FileInputStream(new File(testDir, samplesFolder + "report.html")));
+            newResult.setBuildReportData(new FileInputStream(new File(testDir, samplesFolder + "result-data-2.0.0.json")));
+            newResult.setBuildReport(new FileInputStream(new File(testDir, samplesFolder + "report.html")));
 
             System.out.println("Asserting test file content.");
             String htmlString = '{"date":"28-Feb-2022 17:26:26","build":"151","id":"DBB API Version","type":"VERSION","version":"1.1.3"}';
