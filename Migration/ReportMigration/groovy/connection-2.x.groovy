@@ -197,7 +197,7 @@ def exceptionClosure(Closure closure) {
     } catch (BuildException error) {
         String message;
         Throwable root = getRootCause(error);
-        if (root instanceof FileNotFoundException) {
+        if (root instanceof IllegalArgumentException && root.getMessage().contains("passwordFile")) {
             message = String.format("There was an issue reading your password file: '%s'", root.getMessage());
         } else {
             message = String.format("There was an issue connecting to the Metadata Store: '%s'", error.getMessage());

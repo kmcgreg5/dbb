@@ -100,7 +100,6 @@ class StaticReportMigrationTests {
             command.add("--grp");
             command.add(GROUP);
             Map<String, String> output = runMigrationScript(command, 2);
-            println("OUT:\n" + output.get("out") + "\n\nERR:\n" + output.get("err"));
             assertTrue(output.get("out").contains("There was an issue reading your password file"));
         }
 
@@ -114,7 +113,7 @@ class StaticReportMigrationTests {
             command.add("--id");
             command.add(id);
             command.add("--pw");
-            command.add("BADPASSWORD");
+            command.add("1eMBM6+tJspEoJiwJqfKqA==");
             command.add("--grp");
             command.add(GROUP);
             Map<String, String> output = runMigrationScript(command, 2);
@@ -153,7 +152,7 @@ class StaticReportMigrationTests {
         System.out.println("Validating results.");
         for (BuildResult result : store.getBuildResults(Collections.singletonMap(QueryParms.GROUP, GROUP))) {
             String content = Utils.readFromStream(result.getBuildReport().getContent(), "UTF-8");
-            assertTrue(content.contains('<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">'), String.format("Result data '%s%s' not readable, bad encoding likely.", result.getGroup(), result.getLabel()));
+            assertTrue(content.contains('<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us" style="scroll-behavior: smooth;">'), String.format("Result data '%s:%s' not readable, bad encoding likely.", result.getGroup(), result.getLabel()));
             assertFalse(content.contains("</script>"), String.format("Result '%s:%s' not converted.", result.getGroup(), result.getLabel()));
         }
     }
