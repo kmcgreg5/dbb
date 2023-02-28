@@ -40,8 +40,8 @@ class StaticReportMigrationTests {
     @Nested
     @TestInstance(Lifecycle.PER_CLASS)
     class IntegrationTests {
-        @BeforeEach
-        void setupCollection() throws Exception {
+        @BeforeAll
+        static void setupCollection() throws Exception {
             System.out.println("Setting up collection.");
             store.deleteBuildResults(GROUP);
             store.deleteCollection(GROUP);
@@ -157,11 +157,11 @@ class StaticReportMigrationTests {
         }
     }
 
-    private Map<String, String> runMigrationScript(String command) throws IOException, InterruptedException {
+    private Map<String, String> runMigrationScript(String command, int expectedRC) throws IOException, InterruptedException {
         return runMigrationScript(Arrays.asList(command.split(" ")));
     }
 
-    private Map<String, String> runMigrationScript(List<String> command) throws IOException, InterruptedException {
+    private Map<String, String> runMigrationScript(List<String> command, int expectedRC) throws IOException, InterruptedException {
         ProcessBuilder processBuilder = new ProcessBuilder(command);
         processBuilder.environment().put("DBB_HOME", EnvVars.getHome());
         
