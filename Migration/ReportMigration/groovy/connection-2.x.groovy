@@ -94,7 +94,7 @@ public boolean parseArgsInstantiate(String[] args) {
     return true;
 }
 
-private void setGroups(List<String> groupsArg, File groupsFileArg) {
+void setGroups(List<String> groupsArg, File groupsFileArg) {
     // Parses from both items
     if (groupsArg != null) {
         for (String group : groupsArg) {
