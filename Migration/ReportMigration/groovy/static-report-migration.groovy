@@ -9,7 +9,8 @@ import groovy.lang.GroovyClassLoader;
 String leastAcceptableVersion = "2.0.0";
 String mostAcceptableVersion = "3.0.0";
 String version = VersionInfo.getInstance().getVersion();
-if ((String errorMessage = versionUtils.checkVersion(version, leastAcceptableVersion, mostAcceptableVersion)) != null) {
+String errorMessage;
+if ((errorMessage = versionUtils.checkVersion(version, leastAcceptableVersion, mostAcceptableVersion)) != null) {
     println(errorMessage);
     System.exit(1);
 }
