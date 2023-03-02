@@ -1,3 +1,5 @@
+import com.ibm.dbb.build.VersionInfo;
+
 boolean isVersionUnder(String version, String leastVersion) {
     int[] versionArr = Arrays.stream(version.split("\\.")).mapToInt(Integer::parseInt).toArray();
     int[] leastAcceptableVersion = Arrays.stream(leastVersion.split("\\.")).mapToInt(Integer::parseInt).toArray(); // Inclusive
@@ -50,7 +52,8 @@ boolean isVersionOver(String version, String mostVersion) {
     return true;
 }
 
-String checkVersion(String version, String leastAcceptableVersion, String mostAcceptableVersion) {
+String checkVersion(String leastAcceptableVersion, String mostAcceptableVersion) {
+    String version = VersionInfo.getInstance().getVersion();
     String errorMessage;
     if (!isVersionUnder(version, leastAcceptableVersion)) {
         errorMessage = String.format("DBB Version %s is not compatable with this tool, please upgrade to version >= %s", version, leastAcceptableVersion);

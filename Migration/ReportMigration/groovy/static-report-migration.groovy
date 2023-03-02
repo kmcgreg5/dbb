@@ -1,43 +1,22 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
 
-import com.ibm.dbb.build.VersionInfo;
 import groovy.transform.Field;
-import groovy.lang.GroovyClassLoader;
 
 @Field def versionUtils = loadScript(new File("check-version.groovy"));
-
 String leastAcceptableVersion = "2.0.0";
 String mostAcceptableVersion = "3.0.0";
-String version = VersionInfo.getInstance().getVersion();
+// Check DBB Version
 String errorMessage;
-if ((errorMessage = versionUtils.checkVersion(version, leastAcceptableVersion, mostAcceptableVersion)) != null) {
+if ((errorMessage = versionUtils.checkVersion(leastAcceptableVersion, mostAcceptableVersion)) != null) {
     println(errorMessage);
     System.exit(1);
 }
 
-
-@Field Class ScriptException;
-GroovyClassLoader cloader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader());
-File testDir = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath()).getParentFile();
-ScriptException = cloader.parseClass(new File(testDir, "ScriptException.groovy"));
-
 try {
-    main(version);
-} catch (ScriptException error) {
-    // Exceptions from internal APIs
-    println(error.getMessage());
-    System.exit(2);
-} catch (Exception error) {
-    println(error.getMessage());
-    System.exit(1);
-}
-
-
-void main(String version) {
     def connectionScript = loadScript(new File("connection-2.x.groovy"));
 
     // Parse arguments and instantiate client
-    if (!connectionScript.parseArgsInstantiate(args, version)) {
+    if (!connectionScript.parseArgsInstantiate(args)) {
         System.exit(1);
     }
 
@@ -45,7 +24,6 @@ void main(String version) {
     connectionScript.enableFileTagging();
     // consolidate, 
     def results = connectionScript.getBuildResults();
-    connectionScript.filterBuildResults(results);
 
     if (results.size() == 0) {
         println("No non-static build reports found.")
@@ -60,5 +38,7 @@ void main(String version) {
             println("Conversion skipped.");
         }
     }
+} catch (Exception error) {
+    println(error.getMessage());
+    System.exit(1);
 }
-

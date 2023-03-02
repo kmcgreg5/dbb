@@ -8,6 +8,7 @@ import com.ibm.dbb.build.report.BuildReport;
 import com.ibm.dbb.build.BuildProperties;
 import com.ibm.dbb.build.internal.Utils;
 import com.ibm.dbb.build.BuildException;
+import com.ibm.dbb.build.VersionInfo;
 
 import groovy.transform.Field;
 import java.nio.file.Path;
@@ -19,18 +20,14 @@ import org.apache.commons.cli.Option;
 @Field MetadataStore client = null;
 @Field List<String> groups = new ArrayList<>();
 @Field boolean debug = false;
-@Field Class ScriptException;
-GroovyClassLoader cloader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader());
-File testDir = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath()).getParentFile();
-ScriptException = cloader.parseClass(new File(testDir, "ScriptException.groovy"));
 
 /****************************
 **  Argument Parsing       **
 *****************************/
 
-boolean parseArgsInstantiate(String[] args, String version) {
+boolean parseArgsInstantiate(String[] args) {
     String usage = "static-report-migration.sh [options] [--help]";
-    String header = "Using DBB version ${version}";
+    String header = "Using DBB version ${VersionInfo.getInstance().getVersion()}";
     CliBuilder parser = new CliBuilder(usage:usage, header:header);
 
     parser.id(type:String, longOpt:'id', args:1, required:true, 'Db2 Metadata Store user id.');
@@ -69,6 +66,7 @@ boolean parseArgsInstantiate(String[] args, String version) {
         return false;
     }
 
+    // Options passed validation
     if (options.debug) debug = true;
 
     if (options.props) {
@@ -122,19 +120,19 @@ void setGroups(List<String> groupsArg, File groupsFileArg) {
 *****************************/
 
 // Db2 Metadata Store instantiation
-void setClient(String url, String id, String password) {
+private void setClient(String url, String id, String password) {
     client = exceptionClosure {MetadataStoreFactory.createDb2MetadataStore(url, id, password) };
 }
 
-void setClient(String url, String id, File passwordFile) {
+private void setClient(String url, String id, File passwordFile) {
     client = exceptionClosure {MetadataStoreFactory.createDb2MetadataStore(url, id, passwordFile) };
 }
 
-void setClient(String id, String password, Properties properties) {
+private void setClient(String id, String password, Properties properties) {
     client = exceptionClosure {MetadataStoreFactory.createDb2MetadataStore(url, id, properties) };
 }
 
-void setClient(String id, File passwordFile, Properties properties) {
+private void setClient(String id, File passwordFile, Properties properties) {
     client = exceptionClosure {MetadataStoreFactory.createDb2MetadataStore(url, passwordFile, properties) };
 }
 
@@ -142,11 +140,40 @@ void setClient(String id, File passwordFile, Properties properties) {
 **  Command Execution      **
 *****************************/
 
-void enableFileTagging() {
-    BuildProperties.setProperty(Utils.FILE_TAGGING_OPTION_NAME, "true");
+public void enableFileTagging() {
+    exceptionClosure {
+        BuildProperties.setProperty(Utils.FILE_TAGGING_OPTION_NAME, "true");
+    }
 }
 
-List<BuildResult> getBuildResults() {
+
+
+public List<BuildResult> getBuildResults() {
+    return exceptionClosure {
+        List<BuildResult> results = retrieveBuildResults();
+        filterBuildResults(results);
+        return results;
+    }
+}
+
+
+
+public void convertBuildReports(List<BuildResult> results) {
+    exceptionClosure {
+        for (BuildResult result : results) {
+            Path html = Files.createTempFile("dbb-report-mig", ".html");
+            
+            BuildReport report = BuildReport.parse(result.getBuildReportData().getContent());
+            report.generateHTML(html.toFile());
+            result.setBuildReport(new FileInputStream(html.toFile()));
+            
+            System.out.println("${result.getGroup()}:${result.getLabel()} converted.");
+            Files.delete(html);
+        }
+    }
+}
+
+private List<BuildResult> retrieveBuildResults() {
     // Multiple requests to avoid excess memory usage by returning all and then filtering
     List<BuildResult> results = new ArrayList<>();
     for (String group : groups) {
@@ -155,7 +182,7 @@ List<BuildResult> getBuildResults() {
     return results;
 }
 
-void filterBuildResults(List<BuildResult> results) {
+private void filterBuildResults(List<BuildResult> results) {
     results.removeIf(result-> { // IO, Build
         String content = exceptionClosure {Utils.readFromStream(result.getBuildReport().getContent(), "UTF-8") };
         if (content == null) {
@@ -173,25 +200,12 @@ void filterBuildResults(List<BuildResult> results) {
     });
 }
 
-void convertBuildReports(List<BuildResult> results) {
-    for (BuildResult result : results) {
-        Path html = Files.createTempFile("dbb-report-mig", ".html");
-        exceptionClosure { //IO, Build
-            BuildReport report = BuildReport.parse(result.getBuildReportData().getContent());
-            report.generateHTML(html.toFile());
-            result.setBuildReport(new FileInputStream(html.toFile()));
-        }
-        System.out.println("${result.getGroup()}:${result.getLabel()} converted.");
-        Files.delete(html);
-    }
-}
-
 
 /****************************
 **  Utilities              **
 *****************************/
 
-def exceptionClosure(Closure closure) {
+private def exceptionClosure(Closure closure) {
     try {
         closure()
     } catch (BuildException error) {
@@ -203,15 +217,15 @@ def exceptionClosure(Closure closure) {
             message = String.format("There was an issue connecting to the Metadata Store: '%s'", error.getMessage());
         }
         
-        throw new ScriptException(message);
+        throw new Exception(message);
     } catch (IOException error) {
         // Unexplained because exceptions have no one discernable source/cause
         String message = String.format("There was an unexpected exception: '%s'", error.getMessage());
-        throw new ScriptException(message);
+        throw new Exception(message);
     }
 }
 
-Throwable getRootCause(Throwable rootCause) {
+private Throwable getRootCause(Throwable rootCause) {
     while (rootCause.getCause() != null && rootCause.getCause() != rootCause) {
         rootCause = rootCause.getCause();
     }
