@@ -9,12 +9,8 @@ import groovy.lang.GroovyClassLoader;
 String leastAcceptableVersion = "2.0.0";
 String mostAcceptableVersion = "3.0.0";
 String version = VersionInfo.getInstance().getVersion();
-if (!versionUtils.isVersionUnder(version, leastAcceptableVersion)) {
-    println(String.format("DBB Version %s is not compatable with this tool, please upgrade to version >= %s", version, leastAcceptableVersion));
-    System.exit(1);
-}
-if (!versionUtils.isVersionOver(version, mostAcceptableVersion)) {
-    println(String.format("DBB Version %s is not compatable with this tool, please use the version of this tool compatable with DBB 3.x", version));
+if ((String errorMessage = versionUtils.checkVersion(version, leastAcceptableVersion, mostAcceptableVersion)) != null) {
+    println(errorMessage);
     System.exit(1);
 }
 
@@ -46,7 +42,7 @@ void main(String version) {
 
     // Ensure tagging on generated html files
     connectionScript.enableFileTagging();
-
+    // consolidate, 
     def results = connectionScript.getBuildResults();
     connectionScript.filterBuildResults(results);
 
