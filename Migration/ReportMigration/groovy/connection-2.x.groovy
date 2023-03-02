@@ -25,7 +25,7 @@ import org.apache.commons.cli.Option;
 **  Argument Parsing       **
 *****************************/
 
-boolean parseArgsInstantiate(String[] args) {
+public boolean parseArgsInstantiate(String[] args) {
     String usage = "static-report-migration.sh [options] [--help]";
     String header = "Using DBB version ${VersionInfo.getInstance().getVersion()}";
     CliBuilder parser = new CliBuilder(usage:usage, header:header);
@@ -94,7 +94,7 @@ boolean parseArgsInstantiate(String[] args) {
     return true;
 }
 
-void setGroups(List<String> groupsArg, File groupsFileArg) {
+private void setGroups(List<String> groupsArg, File groupsFileArg) {
     // Parses from both items
     if (groupsArg != null) {
         for (String group : groupsArg) {
@@ -120,19 +120,19 @@ void setGroups(List<String> groupsArg, File groupsFileArg) {
 *****************************/
 
 // Db2 Metadata Store instantiation
-private void setClient(String url, String id, String password) {
+void setClient(String url, String id, String password) {
     client = exceptionClosure {MetadataStoreFactory.createDb2MetadataStore(url, id, password) };
 }
 
-private void setClient(String url, String id, File passwordFile) {
+void setClient(String url, String id, File passwordFile) {
     client = exceptionClosure {MetadataStoreFactory.createDb2MetadataStore(url, id, passwordFile) };
 }
 
-private void setClient(String id, String password, Properties properties) {
+void setClient(String id, String password, Properties properties) {
     client = exceptionClosure {MetadataStoreFactory.createDb2MetadataStore(url, id, properties) };
 }
 
-private void setClient(String id, File passwordFile, Properties properties) {
+void setClient(String id, File passwordFile, Properties properties) {
     client = exceptionClosure {MetadataStoreFactory.createDb2MetadataStore(url, passwordFile, properties) };
 }
 
