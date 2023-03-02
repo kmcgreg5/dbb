@@ -99,7 +99,7 @@ class StaticReportMigrationTests {
             command.add("~/nonexistantfile");
             command.add("--grp");
             command.add(GROUP);
-            Map<String, String> output = runMigrationScript(command, 2);
+            Map<String, String> output = runMigrationScript(command, 1);
             assertTrue(output.get("out").contains("There was an issue reading your password file"));
         }
 
@@ -116,7 +116,7 @@ class StaticReportMigrationTests {
             command.add("1eMBM6+tJspEoJiwJqfKqA==");
             command.add("--grp");
             command.add(GROUP);
-            Map<String, String> output = runMigrationScript(command, 2);
+            Map<String, String> output = runMigrationScript(command, 1);
             assertTrue(output.get("out").contains("There was an issue connecting to the Metadata Store"));
         }
     }
