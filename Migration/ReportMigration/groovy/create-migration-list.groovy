@@ -5,7 +5,8 @@ import groovy.cli.commons.CliBuilder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Option;
 import groovy.cli.commons.OptionAccessor;
-//import java.util.Comparator;
+import java.util.stream.Collectors;
+import java.util.function.Function;
 
 @Field def versionUtils = loadScript(new File("check-version.groovy"));
 @Field boolean debug = false;
@@ -55,26 +56,20 @@ try {
     List<String> groups = collectGroups(options.grps ?: null, options.grpf ? options.grpf as File : null);
     List<String> resultGroups = connectionScript.getBuildResultGroups();
     groups = matchGroups(resultGroups, groups);
-    System.exit(0)
-    // Ensure tagging on generated html files
-    connectionScript.enableFileTagging();
-    // consolidate, 
-    def results = connectionScript.getBuildResults(groups);
-
-    if (results.size() == 0) {
-        println("No non-static build reports found.")
-    } else {
-        println("You are about to convert ${results.size()} reports. Would you like to proceed ('y' or 'n'): ")
-        // Works where there is no Console instance
-        String response = System.in.newReader().readLine().trim().toLowerCase();
-        if (response.equals("y") || response.equals("yes")) {
-            connectionScript.convertBuildReports(results);
-            println("Finished conversion.");
-        } else {
-            println("Conversion skipped.");
-        }
+    if (groups.size() == 0) {
+        println("No groups matched.");
+        System.exit(0);
     }
+    
+    def results = connectionScript.getBuildResults(groups);
+    if (results.size() == 0) {
+        println("No non-static build reports found.");
+        System.exit(0);
+    }
+
+    
 } catch (Exception error) {
+    throw error;
     println(error.getMessage());
     System.exit(1);
 }
@@ -148,28 +143,51 @@ private List<String> collectGroups(List<String> groupsArg, File groupsFileArg) {
 
 private List<String> matchGroups(List<String> resultGroups, List<String> groups) {
     // Sort group list from longest to shortest to match the most specific entries first
-    groups.sort(Comparator.comparingInt(String::length).reversed());
+    groups.sort(Comparator.comparingInt(String::length));
 
+    // Return the entire set if '*' is passed in as a group
     List<String> matchedGroups = new ArrayList<>();
+    if (groups.contains("*")) {
+        matchedGroups.addAll(resultGroups);
+        return matchedGroups;
+    }
+
     for (String group : groups) {
-        if (group.equals("*")) {
-            matchedGroups.addAll(resultGroups);
-            break;
-        } else if (group.contains("*")) {
-            // Create initial list of partial matches
-            List<String> matchItems = Arrays.asList(group.split("*"))
+        if (group.contains("*")) {
+            // Transform to ArrayList to add .remove() functionality
+            List<String> matchItems = new ArrayList<>(Arrays.asList(group.split("\\*")));
             
+            // Creates a map where the key is the group name, and the value is the text left to match
             Map<String, String> partialMatches = resultGroups.stream().filter(match -> {
-                return group.startsWith("*") ? match.contains(matchItems.get(0)) : match.startsWith(matchItems.get(0))
-            }).collect(Collectors.toMap(Function.identity(), match -> {
-                return match.substring(match.indexOf(matchItems.get(0)) + matchItems.get(0).length)
+                return group.startsWith("*") ? match.contains(matchItems.get(0)) : match.startsWith(matchItems.get(0));
+            }).collect(Collectors.toMap(Function.identity(), match -> { // Remove matched string from value
+                return match.substring(match.indexOf(matchItems.get(0)) + matchItems.get(0).length());
             }));
-            
-            partialMatches.forEach(key, value -> println("$key:$value"));
+            matchItems.remove(0);
 
+            // Iterate over the items left to match
+            for (String matchText : matchItems) {
+                // Same functions as the stream used to make the initial set, but different types and no handling for initial wildcard (*)
+                partialMatches = partialMatches.entrySet().stream().filter(entry -> {
+                    return entry.getValue().contains(matchText);
+                }).collect(Collectors.toMap(Map.Entry::getKey, entry -> { // Remove matched string from value
+                    return entry.getValue().substring(entry.getValue().indexOf(matchText) + matchText.length());
+                }));
+            }
 
+            // Remove items with remaining text to match if there is not a wildcard (*) at the end
+            if (group.endsWith("*") == false) {
+                partialMatches = partialMatches.entrySet().stream().filter(entry -> entry.getValue().isEmpty()).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            }
+            // Add to the matched groups list
+            partialMatches.keySet().forEach(key -> {
+                resultGroups.remove(key);
+                matchedGroups.add(key);
+            });
 
-
+            if (partialMatches.isEmpty() && this.debug) {
+                println("Group '$group' did not match any stored result groups.");
+            }
 
         } else {
             if (resultGroups.contains(group)) {
@@ -179,7 +197,8 @@ private List<String> matchGroups(List<String> resultGroups, List<String> groups)
             } else if (this.debug) {
                 println("Group '$group' did not match any stored result groups.");
             }
-            
         }
     }
+    
+    return matchedGroups
 }
