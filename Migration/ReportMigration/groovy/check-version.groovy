@@ -53,7 +53,7 @@ boolean isVersionOver(String version, String mostVersion) {
 }
 
 String checkVersion(String leastAcceptableVersion, String mostAcceptableVersion) {
-    String version = VersionInfo.getInstance().getVersion();
+    String version = getVersion();
     String errorMessage;
     if (!isVersionUnder(version, leastAcceptableVersion)) {
         errorMessage = String.format("DBB Version %s is not compatable with this tool, please upgrade to version >= %s", version, leastAcceptableVersion);
@@ -61,4 +61,8 @@ String checkVersion(String leastAcceptableVersion, String mostAcceptableVersion)
         errorMessage = String.format("DBB Version %s is not compatable with this tool, please use the version of this tool compatable with DBB %s", version, leastAcceptableVersion);
     }
     return errorMessage;
+}
+
+String getVersion() {
+    return VersionInfo.getInstance().getVersion();
 }

@@ -17,15 +17,14 @@ import groovy.cli.commons.CliBuilder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Option;
 
-@Field MetadataStore client = null;
-@Field List<String> groups = new ArrayList<>();
+@Field MetadataStore store = null;
 @Field boolean debug = false;
 
 /****************************
 **  Argument Parsing       **
 *****************************/
 
-public boolean parseArgsInstantiate(String[] args) {
+/*public boolean parseArgsInstantiate(String[] args) {
     String usage = "static-report-migration.sh [options] [--help]";
     String header = "Using DBB version ${VersionInfo.getInstance().getVersion()}";
     CliBuilder parser = new CliBuilder(usage:usage, header:header);
@@ -55,46 +54,9 @@ public boolean parseArgsInstantiate(String[] args) {
     parser.options.addOptionGroup(passwordGroup)
     parser.options.addOptionGroup(groupGroup)
     def options = parser.parse(args);
-    if (options == null) return false;
-    if (!options.url && !options.props) {
-        println("error: Connection properties, 'url' or 'props', must be specified.");
-        parser.usage();
-        return false;
-    }
-    if (options.help) {
-        parser.usage();
-        return false;
-    }
+}*/
 
-    // Options passed validation
-    if (options.debug) debug = true;
-
-    if (options.props) {
-        Properties props = new Properties();
-        props.load(options.props);
-        // Override url if its passed in
-        if (options.url) {
-            props.setProperty("url", options.url);
-        }
-        if (options.pw) {
-            setClient(options.id, options.pw, props);
-        } else {
-            setClient(options.id, options.pwFile as File, props);
-        }
-    } else {
-        if (options.pw) {
-            setClient(options.url, options.id, options.pw);
-        } else {
-            setClient(options.url, options.id, options.pwFile as File);
-        }
-    }
-
-    setGroups(options.grps ?: null, options.grpf ? options.grpf as File : null);
-
-    return true;
-}
-
-void setGroups(List<String> groupsArg, File groupsFileArg) {
+/*void setGroups(List<String> groupsArg, File groupsFileArg) {
     // Parses from both items
     if (groupsArg != null) {
         for (String group : groupsArg) {
@@ -113,27 +75,27 @@ void setGroups(List<String> groupsArg, File groupsFileArg) {
             }
         }
     }
-}
+}*/
 
 /****************************
-**  Client Instantiation   **
+**  Store Instantiation    **
 *****************************/
 
 // Db2 Metadata Store instantiation
-void setClient(String url, String id, String password) {
-    client = exceptionClosure {MetadataStoreFactory.createDb2MetadataStore(url, id, password) };
+public void setStore(String url, String id, String password) {
+    store = exceptionClosure {MetadataStoreFactory.createDb2MetadataStore(url, id, password) };
 }
 
-void setClient(String url, String id, File passwordFile) {
-    client = exceptionClosure {MetadataStoreFactory.createDb2MetadataStore(url, id, passwordFile) };
+public void setStore(String url, String id, File passwordFile) {
+    store = exceptionClosure {MetadataStoreFactory.createDb2MetadataStore(url, id, passwordFile) };
 }
 
-void setClient(String id, String password, Properties properties) {
-    client = exceptionClosure {MetadataStoreFactory.createDb2MetadataStore(url, id, properties) };
+public void setStore(String id, String password, Properties properties) {
+    store = exceptionClosure {MetadataStoreFactory.createDb2MetadataStore(url, id, properties) };
 }
 
-void setClient(String id, File passwordFile, Properties properties) {
-    client = exceptionClosure {MetadataStoreFactory.createDb2MetadataStore(url, passwordFile, properties) };
+public void setStore(String id, File passwordFile, Properties properties) {
+    store = exceptionClosure {MetadataStoreFactory.createDb2MetadataStore(url, passwordFile, properties) };
 }
 
 /****************************
@@ -148,10 +110,10 @@ public void enableFileTagging() {
 
 
 
-public List<BuildResult> getBuildResults() {
+public List<BuildResult> getBuildResults(List<String> groups) {
     return exceptionClosure {
-        List<BuildResult> results = retrieveBuildResults();
-        filterBuildResults(results);
+        List<BuildResult> results = retrieveBuildResults(groups);
+        filterBuildResults(results, debug);
         return results;
     }
 }
@@ -173,18 +135,24 @@ public void convertBuildReports(List<BuildResult> results) {
     }
 }
 
-private List<BuildResult> retrieveBuildResults() {
+public List<String> getBuildResultGroups() {
+    return exceptionClosure {
+        return store.listBuildResultGroups();
+    }
+}
+
+private List<BuildResult> retrieveBuildResults(List<String> groups) {
     // Multiple requests to avoid excess memory usage by returning all and then filtering
     List<BuildResult> results = new ArrayList<>();
     for (String group : groups) {
-        results.addAll( exceptionClosure {client.getBuildResults(Collections.singletonMap(QueryParms.GROUP, group)) });
+        results.addAll(store.getBuildResults(Collections.singletonMap(QueryParms.GROUP, group)));
     }
     return results;
 }
 
 private void filterBuildResults(List<BuildResult> results) {
     results.removeIf(result-> { // IO, Build
-        String content = exceptionClosure {Utils.readFromStream(result.getBuildReport().getContent(), "UTF-8") };
+        String content = Utils.readFromStream(result.getBuildReport().getContent(), "UTF-8");
         if (content == null) {
             if (debug) {
                 System.out.println(String.format("Result '%s:%s' has no content... Skipping.", result.getGroup(), result.getLabel()));
@@ -205,6 +173,9 @@ private void filterBuildResults(List<BuildResult> results) {
 **  Utilities              **
 *****************************/
 
+public void setDebug(boolean on) {
+    this.debug = on;
+}
 private def exceptionClosure(Closure closure) {
     try {
         closure()
