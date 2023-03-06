@@ -18,6 +18,7 @@ import java.nio.file.Files;
 import groovy.cli.commons.CliBuilder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Option;
+import java.util.stream.Collectors;
 
 @Field MetadataStore store = null;
 @Field boolean debug = false;
