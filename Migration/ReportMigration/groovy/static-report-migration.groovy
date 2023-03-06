@@ -1,6 +1,11 @@
 @groovy.transform.BaseScript com.ibm.dbb.groovy.ScriptLoader baseScript
 
 import groovy.transform.Field;
+import groovy.cli.commons.CliBuilder;
+import org.apache.commons.cli.OptionGroup;
+import org.apache.commons.cli.Option;
+import groovy.cli.commons.OptionAccessor;
+import java.util.stream.Collectors;
 
 @Field def versionUtils = loadScript(new File("check-version.groovy"));
 @Field boolean debug = false;
