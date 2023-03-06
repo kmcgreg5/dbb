@@ -9,6 +9,8 @@ import com.ibm.dbb.build.BuildProperties;
 import com.ibm.dbb.build.internal.Utils;
 import com.ibm.dbb.build.BuildException;
 import com.ibm.dbb.build.VersionInfo;
+import com.ibm.json.java.JSONArray;
+import com.ibm.json.java.JSONObject;
 
 import groovy.transform.Field;
 import java.nio.file.Path;
@@ -16,8 +18,6 @@ import java.nio.file.Files;
 import groovy.cli.commons.CliBuilder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Option;
-import com.ibm.json.java.JSONObject;
-import com.ibm.json.java.JSONArray;
 
 @Field MetadataStore store = null;
 @Field boolean debug = false;
@@ -115,7 +115,7 @@ public void enableFileTagging() {
 public List<BuildResult> getBuildResults(List<String> groups) {
     return exceptionClosure {
         List<BuildResult> results = retrieveBuildResults(groups);
-        filterBuildResults(results, debug);
+        filterBuildResults(results);
         return results;
     }
 }
@@ -170,6 +170,25 @@ private void filterBuildResults(List<BuildResult> results) {
     });
 }
 
+public void createMigrationList(File jsonFile, List<BuildResult> results) {
+    // Create JSON Object
+    JSONObject json = new JSONObject();
+    for (BuildResult result : results) {
+        if (json.containsKey(result.getGroup())) {
+            JSONArray list = json.get(result.getGroup());
+            list.add(result.getLabel());
+        } else {
+            JSONArray list = new JSONArray();
+            list.add(result.getLabel());
+            json.put(result.getGroup(), list);
+        }
+    }
+    // Write JSON to file
+    try (BufferedWriter writer = new BufferedWriter(new FileWriter(jsonFile))) {
+        writer.write(json.serialize(true));
+    }
+}
+
 
 /****************************
 **  Utilities              **
@@ -177,14 +196,6 @@ private void filterBuildResults(List<BuildResult> results) {
 
 public void setDebug(boolean on) {
     this.debug = on;
-}
-
-public JSONObject getJSONObject() {
-    return new JSONObject();
-}
-
-public JSONArray getJSONArray() {
-    return new JSONArray();
 }
 
 private def exceptionClosure(Closure closure) {

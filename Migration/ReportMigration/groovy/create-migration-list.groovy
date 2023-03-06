@@ -33,7 +33,7 @@ try {
     }
 
     File jsonFile = options.arguments()[0] as File;
-    if (jsonFile.getParentFile().exists() == false) {
+    if (jsonFile.getParentFile() != null && jsonFile.getParentFile().exists() == false) {
         jsonFile.getParentFile().mkdirs();
     }
 
@@ -57,40 +57,29 @@ try {
             connectionScript.setStore(options.url, options.id, options.pwFile as File);
         }
     }
+    
     // Collect groups
     List<String> groups = collectGroups(options.grps ?: null, options.grpf ? options.grpf as File : null);
     List<String> resultGroups = connectionScript.getBuildResultGroups();
+    // Match input groups to collection groups
     groups = matchGroups(resultGroups, groups);
     if (groups.size() == 0) {
         println("No groups matched.");
         System.exit(0);
     }
     
+    // Filter by groups and script tag presence
     def results = connectionScript.getBuildResults(groups);
     if (results.size() == 0) {
         println("No non-static build reports found.");
         System.exit(0);
     }
 
-    def json = connectionScript.getJSONObject();
-    def list = connectionScript.getJSONArray(); // Assign to preload its datatype
-    for (def result : results) {
-        if (json.containsKey(result.getGroup())) {
-            list = json.get(result.getGroup());
-            list.add(result.getLabel());
-        } else {
-            list = connectionScript.getJSONArray();
-            list.add(result.getLabel());
-            json.put(result.getGroup(), list);
-        }
-    }
-
-    try (BufferedWriter writer = new BufferedWriter(new FileWriter(jsonFile))) {
-        writer.write(json.serialize(true));
-    }
+    // Create JSON Object
+    connectionScript.createMigrationList(jsonFile, results);
+    println("Result list file '${jsonFile.getAbsolutePath()}' created.");
     
 } catch (Exception error) {
-    throw error;
     println(error.getMessage());
     System.exit(1);
 }
@@ -131,13 +120,8 @@ private OptionAccessor getOptions(String[] args) {
         parser.usage();
         System.exit(1);
     }
-    if (options.arguments() == null) {
+    if (options.arguments().size() == 0) {
         println("error: Positional argument, 'json-file', must be specified.");
-        parser.usage();
-        System.exit(1);
-    }
-    if ((options.arguments()[0] as File).isFile() == false) {
-        println("error: Positional argument, 'json-file', must be a valid file path.");
         parser.usage();
         System.exit(1);
     }
@@ -153,7 +137,9 @@ private List<String> collectGroups(List<String> groupsArg, File groupsFileArg) {
     // Pull groups out of argument list and file argument
     if (groupsArg != null) {
         for (String group : groupsArg) {
-            groups.add(group.trim());
+            group = group.trim();
+            if (group.isEmpty()) continue;
+            groups.add(group);
         }
     }
 
@@ -184,7 +170,7 @@ private List<String> matchGroups(List<String> resultGroups, List<String> groups)
     }
 
     for (String group : groups) {
-        if (group.contains("*")) {
+        if (group.contains("*")) { // Match wildcard groups
             // Transform to ArrayList to add .remove() functionality
             List<String> matchItems = new ArrayList<>(Arrays.asList(group.split("\\*")));
             
@@ -220,7 +206,7 @@ private List<String> matchGroups(List<String> resultGroups, List<String> groups)
                 println("Group '$group' did not match any stored result groups.");
             }
 
-        } else {
+        } else { // Exact match groups
             if (resultGroups.contains(group)) {
                 // Remove from result groups to avoid duplicates
                 resultGroups.remove(group);
