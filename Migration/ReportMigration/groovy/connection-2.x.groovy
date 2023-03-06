@@ -189,7 +189,15 @@ public void createMigrationList(File jsonFile, List<BuildResult> results) {
     }
 }
 
+public Map<String, List<String>> readMigrationList(File jsonFile) {
+    JSONObject json;
+    try (BufferedReader reader = new BufferedReader(new FileReader(jsonFile))) {
+        json = JSONObject.parse(reader);
+    }
 
+    Map<String, List<String>> list = json.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    return list;
+}
 /****************************
 **  Utilities              **
 *****************************/
