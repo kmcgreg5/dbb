@@ -43,15 +43,15 @@ try {
             props.setProperty("url", options.url);
         }
         if (options.pw) {
-            setClient(options.id, options.pw, props);
+            connectionScript.setStore(options.id, options.pw, props);
         } else {
-            setClient(options.id, options.pwFile as File, props);
+            connectionScript.setStore(options.id, options.pwFile as File, props);
         }
     } else {
         if (options.pw) {
-            setClient(options.url, options.id, options.pw);
+            connectionScript.setStore(options.url, options.id, options.pw);
         } else {
-            setClient(options.url, options.id, options.pwFile as File);
+            connectionScript.setStore(options.url, options.id, options.pwFile as File);
         }
     }
 
