@@ -113,7 +113,7 @@ public void enableFileTagging() {
 
 
 
-public List<BuildResult> getBuildResults(List<String> groups) {
+public List<BuildResult> getNonStaticBuildResults(List<String> groups) {
     return exceptionClosure {
         List<BuildResult> results = retrieveBuildResults(groups);
         filterBuildResults(results);
@@ -121,6 +121,16 @@ public List<BuildResult> getBuildResults(List<String> groups) {
     }
 }
 
+
+public List<BuildResult> getBuildResultsFromGroup(String group, List<String> labels) {
+    return exceptionClosure {
+        List<BuildResult> results = retrieveBuildResults(group);
+        results.removeIf(result -> {
+            return !labels.contains(result.getLabel());
+        });
+        return results;
+    }
+}
 
 
 public void convertBuildReports(List<BuildResult> results) {
@@ -148,9 +158,13 @@ private List<BuildResult> retrieveBuildResults(List<String> groups) {
     // Multiple requests to avoid excess memory usage by returning all and then filtering
     List<BuildResult> results = new ArrayList<>();
     for (String group : groups) {
-        results.addAll(store.getBuildResults(Collections.singletonMap(QueryParms.GROUP, group)));
+        results.addAll(retrieveBuildResults(group));
     }
     return results;
+}
+
+private List<BuildResult> retrieveBuildResults(String group) {
+    return store.getBuildResults(Collections.singletonMap(QueryParms.GROUP, group));
 }
 
 private void filterBuildResults(List<BuildResult> results) {

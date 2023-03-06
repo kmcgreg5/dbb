@@ -23,7 +23,7 @@ if ((errorMessage = versionUtils.checkVersion(leastAcceptableVersion, mostAccept
 // Main execution block
 try {
     // Load connection API script
-    def connectionScript = loadScript(new File("connection-2.x.groovy"));
+    def connectionScript = loadScript(new File("dbb-2.x-api.groovy"));
 
     // Process CLI Arguments
     OptionAccessor options = getOptions(args);
@@ -69,7 +69,7 @@ try {
     }
     
     // Filter by groups and script tag presence
-    def results = connectionScript.getBuildResults(groups);
+    def results = connectionScript.getNonStaticBuildResults(groups);
     if (results.size() == 0) {
         println("No non-static build reports found.");
         System.exit(0);
@@ -77,7 +77,7 @@ try {
 
     // Create JSON Object
     connectionScript.createMigrationList(jsonFile, results);
-    println("Result list file '${jsonFile.getAbsolutePath()}' created.");
+    println("Migration list '${jsonFile.getAbsolutePath()}' created.");
     
 } catch (Exception error) {
     println(error.getMessage());
@@ -110,7 +110,7 @@ private OptionAccessor getOptions(String[] args) {
     groupGroup.addOption(parser.option("grpf", [type:File, longOpt:"grpf", args:1], "A file containing groups seperated by new lines."));
     parser.options.addOptionGroup(groupGroup);
 
-    parser.debug(longOpt:"debug", 'Prints entries that are skipped.');
+    parser.debug(longOpt:"debug", 'Enables DBB logging and prints groups that are skipped.');
     parser.help(longOpt:"help", 'Prints this message.');
     
     OptionAccessor options = parser.parse(args);
@@ -165,6 +165,13 @@ private List<String> matchGroups(List<String> resultGroups, List<String> groups)
     // Return the entire set if '*' is passed in as a group
     List<String> matchedGroups = new ArrayList<>();
     if (groups.contains("*")) {
+        if (this.debug) {
+            println("Wildcard group entered, all results selected.");
+            if (groups.size() > 1) {
+                groups.remove("*");
+                println("Groups '${String.join(', ', groups)}' skipped.");
+            }
+        }
         matchedGroups.addAll(resultGroups);
         return matchedGroups;
     }

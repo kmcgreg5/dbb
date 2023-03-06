@@ -20,7 +20,7 @@ if ((errorMessage = versionUtils.checkVersion(leastAcceptableVersion, mostAccept
 
 // Main execution block
 try {
-    def connectionScript = loadScript(new File("connection-2.x.groovy"));
+    def connectionScript = loadScript(new File("dbb-2.x-api.groovy"));
 
     // Parse arguments and instantiate client
     OptionAccessor options = getOptions(args);
@@ -55,27 +55,23 @@ try {
     }
 
     Map<String, List<String>> migrationList = connectionScript.readMigrationList(jsonFile);
-    for (List<String> item : migrationList) {
-        println(item);
+    if (migrationList.size() == 0) {
+        println("No build results found in '$jsonFile'.");
+        System.exit(0);
     }
-    return;
+
     // Ensure tagging on generated html files
     connectionScript.enableFileTagging();
-    // consolidate, 
-    def results = connectionScript.getBuildResults();
 
-    if (results.size() == 0) {
-        println("No non-static build reports found.")
-    } else {
-        println("You are about to convert ${results.size()} reports. Would you like to proceed ('y' or 'n'): ")
-        // Works where there is no Console instance
-        String response = System.in.newReader().readLine().trim().toLowerCase();
-        if (response.equals("y") || response.equals("yes")) {
-            connectionScript.convertBuildReports(results);
-            println("Finished conversion.");
-        } else {
-            println("Conversion skipped.");
+    for (Map.Entry<String, List<String>> entry : migrationList) {
+        def results = connectionScript.getBuildResultsFromGroup(entry.getKey(), entry.getValue());
+        if (results.size() == 0) {
+            if (this.debug) {
+                println("No results matched for group '${entry.getKey()}'.");
+            }
+            continue;
         }
+        connectionScript.convertBuildReports(results);
     }
 } catch (Exception error) {
     throw error;
@@ -103,7 +99,7 @@ public OptionAccessor getOptions(String[] args) {
     parser.options.addOptionGroup(passwordGroup);
 
     parser.help(longOpt:"help", 'Prints this message.');
-    parser.debug(longOpt:"debug", 'Prints entries that are skipped.');
+    parser.debug(longOpt:"debug", 'Enables DBB logging and prints entries that are skipped.');
     
     // Should not display any output, just used to validate positional arguments
     
