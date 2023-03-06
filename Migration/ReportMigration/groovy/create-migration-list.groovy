@@ -32,6 +32,11 @@ try {
         connectionScript.setDebug(true);
     }
 
+    File jsonFile = options.arguments()[0] as File;
+    if (jsonFile.getParentFile().exists() == false) {
+        jsonFile.getParentFile().mkdirs();
+    }
+
     // Instantiate MetadataStore
     if (options.props) {
         Properties props = new Properties();
@@ -67,6 +72,22 @@ try {
         System.exit(0);
     }
 
+    def json = connectionScript.getJSONObject();
+    def list = connectionScript.getJSONArray(); // Assign to preload its datatype
+    for (def result : results) {
+        if (json.containsKey(result.getGroup())) {
+            list = json.get(result.getGroup());
+            list.add(result.getLabel());
+        } else {
+            list = connectionScript.getJSONArray();
+            list.add(result.getLabel());
+            json.put(result.getGroup(), list);
+        }
+    }
+
+    try (BufferedWriter writer = new BufferedWriter(new FileWriter(jsonFile))) {
+        writer.write(json.serialize(true));
+    }
     
 } catch (Exception error) {
     throw error;
@@ -75,9 +96,9 @@ try {
 }
 
 private OptionAccessor getOptions(String[] args) {
-    String usage = "create-migration-list.sh [options] [--help]";
+    String usage = "create-migration-list.sh <json-file> [options] [--help]";
     String header = "Using DBB version ${versionUtils.getVersion()}";
-    CliBuilder parser = new CliBuilder(usage:usage, header:header);
+    CliBuilder parser = new CliBuilder(usage:usage, header:header, stopAtNonOption:false);
 
     parser.id(type:String, longOpt:'id', args:1, required:true, 'Db2 Metadata Store user id.');
 
@@ -107,6 +128,16 @@ private OptionAccessor getOptions(String[] args) {
     if (options == null) System.exit(1);
     if (!options.url && !options.props) {
         println("error: Connection properties, 'url' or 'props', must be specified.");
+        parser.usage();
+        System.exit(1);
+    }
+    if (options.arguments() == null) {
+        println("error: Positional argument, 'json-file', must be specified.");
+        parser.usage();
+        System.exit(1);
+    }
+    if ((options.arguments()[0] as File).isFile() == false) {
+        println("error: Positional argument, 'json-file', must be a valid file path.");
         parser.usage();
         System.exit(1);
     }

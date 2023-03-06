@@ -16,6 +16,8 @@ import java.nio.file.Files;
 import groovy.cli.commons.CliBuilder;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Option;
+import com.ibm.json.java.JSONObject;
+import com.ibm.json.java.JSONArray;
 
 @Field MetadataStore store = null;
 @Field boolean debug = false;
@@ -176,6 +178,15 @@ private void filterBuildResults(List<BuildResult> results) {
 public void setDebug(boolean on) {
     this.debug = on;
 }
+
+public JSONObject getJSONObject() {
+    return new JSONObject();
+}
+
+public JSONArray getJSONArray() {
+    return new JSONArray();
+}
+
 private def exceptionClosure(Closure closure) {
     try {
         closure()
