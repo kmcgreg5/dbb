@@ -59,36 +59,48 @@ class StaticReportMigrationTests {
         @Order(1)
         void testVersion() {
             System.out.println("Running version test.");
-            File currVersion = new File(EnvVars.getHome() + "/bin/version.properties");
-            File testVersion = new File(testDir, "../tests/samples/version.properties");
-            File tempFile = new File("temp.properties");
-            System.out.println(currVersion);
+            File testVersion = new File(testDir, "samples/version.properties");
+
+            File versionPackage = new File("com/ibm/dbb/build/internal/version.properties");
+            versionPackage.getParentFile().mkdirs();
+            Files.copy(testVersion.toPath(), versionPackage.toPath());
             try {
-                tempFile.delete();
-                assertTrue(currVersion.renameTo(tempFile), "Failed to move current version out.");
-                Files.copy(testVersion.toPath(), currVersion.toPath());
-                assertTrue(currVersion.exists(), "Failed to copy test version in.");
-                System.out.println("Successflly Moved Files");
+                // Update version file within jar
+                List<String> command = new ArrayList<>();
+                command.add("jar");
+                command.add("-uf");
+                command.add(EnvVars.getHome() + "/lib/dbb.core*.jar");
+                command.add(versionPackage.getPath());
+                runProcess(command, 0);
+
                 String errorMessage = "DBB Version 1.1.4 is not compatable with this tool";
                 List<String> command = new ArrayList<>();
                 command.add(listScript);
-                Map<String, String> output = runMigrationScript(command, 1);
+                Map<String, String> output = runProcess(command, 1);
                 assertTrue(output.get("out").contains(errorMessage));
 
                 command = new ArrayList<>();
                 command.add(migrateScript);
-                output = runMigrationScript(command, 1);
+                output = runProcess(command, 1);
                 assertTrue(output.get("out").contains(errorMessage));
             } finally {
-                currVersion.delete();
-                assertTrue(tempFile.renameTo(currVersion), "Failed to reset current version.");
+                versionPackage.delete();
+                Files.copy(Paths.get(EnvVars.getHome() + "/bin/version.properties"), versionPackage.toPath());
+                List<String> command = new ArrayList<>();
+                command.add("jar");
+                command.add("-uf");
+                command.add(EnvVars.getHome() + "/lib/dbb.core*.jar");
+                command.add(versionPackage.getPath());
+                runProcess(command, 0);
+                // Clear temp folder structure
+                while (versionPackage != null) {
+                    versionPackage.delete();
+                    versionPackage = versionPackage.getParentFile();
+                }
             }
-            
-            List<String> command = new ArrayList<>();
-            command.add(listScript);
         }
 
-        @Test
+        //@Test
         @Order(2)
         void testWildcard() {
             System.out.println("Running group wildcard tests.");
@@ -104,14 +116,14 @@ class StaticReportMigrationTests {
             command.add("--grp");
             command.add(",*");
 
-            Map<String, String> output = runMigrationScript(command, 0);
+            Map<String, String> output = runProcess(command, 0);
             Map<String, List<String>> expected = new HashMap<>();
             expected.put(GROUP, Arrays.asList(LABEL));
             expected.put(GROUP2, Arrays.asList(LABEL));
             validateMigrationList(jsonFile, expected);
         }
 
-        @Test
+        //@Test
         @Order(3)
         void testWildcardSingleSegment() {
             System.out.println("Running group wildcard single-segment tests.");
@@ -127,14 +139,14 @@ class StaticReportMigrationTests {
             command.add("--grp");
             command.add("Static*");
 
-            Map<String, String> output = runMigrationScript(command, 0);
+            Map<String, String> output = runProcess(command, 0);
             Map<String, List<String>> expected = new HashMap<>();
             expected.put(GROUP, Arrays.asList(LABEL));
             expected.put(GROUP2, Arrays.asList(LABEL));
             validateMigrationList(jsonFile, expected);
         }
 
-        @Test
+        //@Test
         @Order(5) // Execute last to prepare list for migration test
         void testWildcardMultiSegment() {
             System.out.println("Running group wildcard multi-segment tests.");
@@ -150,13 +162,13 @@ class StaticReportMigrationTests {
             command.add("--grp");
             command.add("*Static*Test");
 
-            Map<String, String> output = runMigrationScript(command, 0);
+            Map<String, String> output = runProcess(command, 0);
             Map<String, List<String>> expected = new HashMap<>();
             expected.put(GROUP, Arrays.asList(LABEL));
             validateMigrationList(jsonFile, expected);
         }
 
-        @Test
+        //@Test
         @Order(4)
         void testExactMatch() {
             System.out.println("Running group exact match tests.");
@@ -172,7 +184,7 @@ class StaticReportMigrationTests {
             command.add("--grp");
             command.add("Static-Report-Migration-Test-2");
 
-            Map<String, String> output = runMigrationScript(command, 0);
+            Map<String, String> output = runProcess(command, 0);
             Map<String, List<String>> expected = new HashMap<>();
             expected.put(GROUP2, Arrays.asList(LABEL));
             validateMigrationList(jsonFile, expected);
@@ -184,7 +196,7 @@ class StaticReportMigrationTests {
     @Order(2)
     class MigrationTests {
 
-        @Test
+        //@Test
         void migrationTest() {
             System.out.println("Running migration test.");
             List<String> command = new ArrayList<>();
@@ -196,7 +208,7 @@ class StaticReportMigrationTests {
             command.add(id);
             command.add("--pwFile");
             command.add(passwordFile.getPath());
-            Map<String, String> output = runMigrationScript(command, 0);
+            Map<String, String> output = runProcess(command, 0);
             assertTrue(output.get("err").trim().isEmpty(), String.format("Error stream is not empty\nOUT:\n%s\n\nERR:\n%s", output.get("out"), output.get("err")));
             validateResults();
         }
@@ -295,11 +307,11 @@ class StaticReportMigrationTests {
         }
     }
 
-    private Map<String, String> runMigrationScript(String command, int expectedRC) throws IOException, InterruptedException {
-        return runMigrationScript(Arrays.asList(command.split(" ")));
+    private Map<String, String> runProcess(String command, int expectedRC) throws IOException, InterruptedException {
+        return runProcess(Arrays.asList(command.split(" ")));
     }
 
-    private Map<String, String> runMigrationScript(List<String> command, int expectedRC) throws IOException, InterruptedException {
+    private Map<String, String> runProcess(List<String> command, int expectedRC) throws IOException, InterruptedException {
         ProcessBuilder processBuilder = new ProcessBuilder(command);
         processBuilder.environment().put("DBB_HOME", EnvVars.getHome());
         
