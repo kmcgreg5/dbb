@@ -27,10 +27,12 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 
 @TestClassOrder(ClassOrderer.OrderAnnotation.class)
 class StaticReportMigrationTests {
     private static final String GROUP = "Static-Report-Migration-Test";
+    private static final String GROUP2 = "Static-Report-Migration-Test-2";
     private static final String LABEL = "buildresult";
     private static final String URL_KEY = "test-url";
     private static final String ID_KEY = "test-id";
@@ -39,6 +41,7 @@ class StaticReportMigrationTests {
     private static File testDir = new File(StaticReportMigrationTests.getProtectionDomain().getCodeSource().getLocation().getPath()).getParentFile();
     private static String listScript = new File(testDir, "../bin/create-migration-list.sh").getPath();
     private static String migrateScript = new File(testDir, "../bin/migrate-list.sh").getPath();
+    private static String jsonFile = new File("list.json");
 
     private static String url;
     private static String id;
@@ -51,7 +54,10 @@ class StaticReportMigrationTests {
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
     @Order(1)
     class ListCreationTests {
-        @Test
+        /*
+         * Can be tested with jar-uf to replace version.properties in dbb.core-<>.jar
+         * Non-functional test.
+         */
         void testVersion() {
             System.out.println("Running version test.");
             File currVersion = new File(EnvVars.getHome() + "/bin/version.properties");
@@ -68,8 +74,6 @@ class StaticReportMigrationTests {
                 List<String> command = new ArrayList<>();
                 command.add(listScript);
                 Map<String, String> output = runMigrationScript(command, 1);
-                System.out.println(output.get("out"));
-                System.out.println(output.get("err"));
                 assertTrue(output.get("out").contains(errorMessage));
 
                 command = new ArrayList<>();
@@ -77,12 +81,90 @@ class StaticReportMigrationTests {
                 output = runMigrationScript(command, 1);
                 assertTrue(output.get("out").contains(errorMessage));
             } finally {
-                //currVersion.delete();
-                //assertTrue(tempFile.renameTo(currVersion), "Failed to reset current version.");
+                currVersion.delete();
+                assertTrue(tempFile.renameTo(currVersion), "Failed to reset current version.");
             }
             
             List<String> command = new ArrayList<>();
             command.add(listScript);
+        }
+
+        void testWildcard() {
+            System.out.println("Running wildcard tests.");
+            List<String> command = new ArrayList<>();
+            command.add(listScript);
+            command.add("--url");
+            command.add(url);
+            command.add("--id");
+            command.add(id);
+            command.add("--pwFile");
+            command.add(passwordFile.getPath());
+            command.add("--grp");
+            command.add(",*");
+
+            Map<String, String> output = runMigrationScript(command, 0);
+            Map<String, List<String>> expected = new HashMap<>();
+            expected.put(GROUP, Arrays.asList(LABEL));
+            expected.put(GROUP2, Arrays.asList(LABEL));
+            validateMigrationList(jsonFile, expected);
+        }
+
+        void testWildcardSingleSegment() {
+            System.out.println("Running wildcard tests.");
+            List<String> command = new ArrayList<>();
+            command.add(listScript);
+            command.add("--url");
+            command.add(url);
+            command.add("--id");
+            command.add(id);
+            command.add("--pwFile");
+            command.add(passwordFile.getPath());
+            command.add("--grp");
+            command.add("Static*");
+
+            Map<String, String> output = runMigrationScript(command, 0);
+            Map<String, List<String>> expected = new HashMap<>();
+            expected.put(GROUP, Arrays.asList(LABEL));
+            expected.put(GROUP2, Arrays.asList(LABEL));
+            validateMigrationList(jsonFile, expected);
+        }
+
+        void testWildcardMultiSegment() {
+            System.out.println("Running wildcard tests.");
+            List<String> command = new ArrayList<>();
+            command.add(listScript);
+            command.add("--url");
+            command.add(url);
+            command.add("--id");
+            command.add(id);
+            command.add("--pwFile");
+            command.add(passwordFile.getPath());
+            command.add("--grp");
+            command.add("*Static*Test");
+
+            Map<String, String> output = runMigrationScript(command, 0);
+            Map<String, List<String>> expected = new HashMap<>();
+            expected.put(GROUP, Arrays.asList(LABEL));
+            validateMigrationList(jsonFile, expected);
+        }
+
+        void testExactMatch() {
+            System.out.println("Running wildcard tests.");
+            List<String> command = new ArrayList<>();
+            command.add(listScript);
+            command.add("--url");
+            command.add(url);
+            command.add("--id");
+            command.add(id);
+            command.add("--pwFile");
+            command.add(passwordFile.getPath());
+            command.add("--grp");
+            command.add("Static-Report-Migration-Test-2");
+            
+            Map<String, String> output = runMigrationScript(command, 0);
+            Map<String, List<String>> expected = new HashMap<>();
+            expected.put(GROUP2, Arrays.asList(LABEL));
+            validateMigrationList(jsonFile, expected);
         }
     }
 
@@ -174,6 +256,55 @@ class StaticReportMigrationTests {
         //store.deleteCollection(GROUP);
     }
 
+    private static void setupCollection() throws Exception {
+        System.out.println("Setting up collection.");
+        store.deleteBuildResults(GROUP);
+        store.deleteCollection(GROUP);
+
+        // Create first collection
+        store.createCollection(GROUP);
+        BuildResult newResult = store.createBuildResult(GROUP, LABEL);
+        newResult.setState(BuildResult.COMPLETE);
+
+        String samplesFolder = "samples/";
+        // Report data is labled with the version used to create it, in case of differences between versions
+        newResult.setBuildReportData(new FileInputStream(new File(testDir, samplesFolder + "result-data-2.0.0.json")));
+        newResult.setBuildReport(new FileInputStream(new File(testDir, samplesFolder + "report.html")));
+
+        // Create second collection
+        store.createCollection(GROUP2);
+        newResult = store.createBuildResult(GROUP2, LABEL);
+        newResult.setState(BuildResult.COMPLETE);
+
+        newResult.setBuildReportData(new FileInputStream(new File(testDir, samplesFolder + "result-data-2.0.0.json")));
+        newResult.setBuildReport(new FileInputStream(new File(testDir, samplesFolder  + "report.html")));
+
+        // Assert file content
+        System.out.println("Asserting test file content.");
+        String htmlString = '{"date":"28-Feb-2022 17:26:26","build":"151","id":"DBB API Version","type":"VERSION","version":"1.1.3"}';
+        String dataString = '{"date":"06-Dec-2022 17:13:58","build":"113","id":"DBB API Version","type":"VERSION","version":"2.0.0"}';
+        List<BuildResult> results = store.getBuildResults(Collections.singletonMap(QueryParms.GROUP, GROUP));
+        for (BuildResult result : results) {
+            assertEquals(GROUP, result.getGroup());
+            assertEquals(LABEL, result.getLabel());
+            assertTrue(Utils.readFromStream(result.getBuildReport().getContent(), "UTF-8").contains(htmlString));
+            assertTrue(Utils.readFromStream(result.getBuildReportData().getContent(), "UTF-8").contains(dataString));
+        }
+        assertTrue(results.size() == 1);
+    }
+
+    private void validateMigrationList(File jsonFile, Map<String, List<String>> expected) {
+        JSONObject json;
+        try (BufferedReader reader = new BufferedReader(new FileReader(jsonFile))) {
+            json = JSONObject.parse(reader);
+        }
+
+        expected.forEach((key, value) -> {
+            assertTrue(json.containsKey(key));
+            assertIterableEquals(value, json.get(key));
+        });
+    }
+
     private void validateResults() {
         System.out.println("Validating results.");
         for (BuildResult result : store.getBuildResults(Collections.singletonMap(QueryParms.GROUP, GROUP))) {
@@ -236,30 +367,5 @@ class StaticReportMigrationTests {
         return returnMap;
     }
 
-    private static void setupCollection() throws Exception {
-        System.out.println("Setting up collection.");
-        store.deleteBuildResults(GROUP);
-        store.deleteCollection(GROUP);
-
-        store.createCollection(GROUP);
-        BuildResult newResult = store.createBuildResult(GROUP, LABEL);
-        newResult.setState(BuildResult.COMPLETE);
-
-        String samplesFolder = "samples/";
-        // Report data is labled with the version used to create it, in case of differences between versions
-        newResult.setBuildReportData(new FileInputStream(new File(testDir, samplesFolder + "result-data-2.0.0.json")));
-        newResult.setBuildReport(new FileInputStream(new File(testDir, samplesFolder + "report.html")));
-
-        System.out.println("Asserting test file content.");
-        String htmlString = '{"date":"28-Feb-2022 17:26:26","build":"151","id":"DBB API Version","type":"VERSION","version":"1.1.3"}';
-        String dataString = '{"date":"06-Dec-2022 17:13:58","build":"113","id":"DBB API Version","type":"VERSION","version":"2.0.0"}';
-        List<BuildResult> results = store.getBuildResults(Collections.singletonMap(QueryParms.GROUP, GROUP));
-        for (BuildResult result : results) {
-            assertEquals(GROUP, result.getGroup());
-            assertEquals(LABEL, result.getLabel());
-            assertTrue(Utils.readFromStream(result.getBuildReport().getContent(), "UTF-8").contains(htmlString));
-            assertTrue(Utils.readFromStream(result.getBuildReportData().getContent(), "UTF-8").contains(dataString));
-        }
-        assertTrue(results.size() == 1);
-    }
+    
 }
