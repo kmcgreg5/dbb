@@ -96,11 +96,16 @@ class StaticReportMigrationTests {
                 command.add("-uf");
                 command.add(EnvVars.getHome() + "/lib/dbb.core*.jar");
                 command.add(versionPackage.getPath());
-                runProcess(command, 0);
-                // Clear temp folder structure
-                while (versionPackage != null) {
-                    versionPackage.delete();
-                    versionPackage = versionPackage.getParentFile();
+                try {
+                    runProcess(command, 0);
+                } catch (Exception error) {
+                    throw new Exception("Failed to reset DBB version info back to original state.", error);
+                } finally {
+                    // Clear temp folder structure
+                    while (versionPackage != null) {
+                        versionPackage.delete();
+                        versionPackage = versionPackage.getParentFile();
+                    }
                 }
             }
         }
