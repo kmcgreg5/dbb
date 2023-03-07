@@ -189,7 +189,7 @@ class StaticReportMigrationTests {
             System.out.println("Running migration test.");
             List<String> command = new ArrayList<>();
             command.add(migrateScript);
-            command.add(jsonfile.getPath());
+            command.add(jsonFile.getPath());
             command.add("--url");
             command.add(url);
             command.add("--id");
@@ -347,6 +347,4 @@ class StaticReportMigrationTests {
         returnMap.put("err", errorString);
         return returnMap;
     }
-
-    
 }
