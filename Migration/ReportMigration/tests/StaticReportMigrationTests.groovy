@@ -4,6 +4,7 @@ import com.ibm.dbb.metadata.BuildResult;
 import com.ibm.dbb.metadata.BuildResult.QueryParms;
 import com.ibm.dbb.EnvVars;
 import com.ibm.dbb.build.internal.Utils;
+import com.ibm.json.java.JSONObject;
 
 import java.util.concurrent.TimeUnit;
 import java.lang.Thread;
@@ -160,7 +161,7 @@ class StaticReportMigrationTests {
             command.add(passwordFile.getPath());
             command.add("--grp");
             command.add("Static-Report-Migration-Test-2");
-            
+
             Map<String, String> output = runMigrationScript(command, 0);
             Map<String, List<String>> expected = new HashMap<>();
             expected.put(GROUP2, Arrays.asList(LABEL));
