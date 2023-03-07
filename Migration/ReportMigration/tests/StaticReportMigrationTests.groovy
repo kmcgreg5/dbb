@@ -55,10 +55,6 @@ class StaticReportMigrationTests {
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
     @Order(1)
     class ListCreationTests {
-        /*
-         * Can be tested with jar-uf to replace version.properties in dbb.core-<>.jar
-         * Non-functional test.
-         */
         @Test
         @Order(1)
         void testVersion() {
@@ -111,9 +107,11 @@ class StaticReportMigrationTests {
                     }
                 }
             }
+
+            assertEquals(VersionInfo.getInstance().getVersion(), version);
         }
 
-        //@Test
+        @Test
         @Order(2)
         void testWildcard() {
             System.out.println("Running group wildcard tests.");
@@ -136,7 +134,7 @@ class StaticReportMigrationTests {
             validateMigrationList(jsonFile, expected);
         }
 
-        //@Test
+        @Test
         @Order(3)
         void testWildcardSingleSegment() {
             System.out.println("Running group wildcard single-segment tests.");
@@ -159,7 +157,7 @@ class StaticReportMigrationTests {
             validateMigrationList(jsonFile, expected);
         }
 
-        //@Test
+        @Test
         @Order(5) // Execute last to prepare list for migration test
         void testWildcardMultiSegment() {
             System.out.println("Running group wildcard multi-segment tests.");
@@ -181,7 +179,7 @@ class StaticReportMigrationTests {
             validateMigrationList(jsonFile, expected);
         }
 
-        //@Test
+        @Test
         @Order(4)
         void testExactMatch() {
             System.out.println("Running group exact match tests.");
@@ -209,7 +207,7 @@ class StaticReportMigrationTests {
     @Order(2)
     class MigrationTests {
 
-        //@Test
+        @Test
         void migrationTest() {
             System.out.println("Running migration test.");
             List<String> command = new ArrayList<>();
@@ -320,10 +318,6 @@ class StaticReportMigrationTests {
         }
     }
 
-    private Map<String, String> runProcess(String command, int expectedRC) throws IOException, InterruptedException {
-        return runProcess(Arrays.asList(command.split(" ")));
-    }
-
     private Map<String, String> runProcess(List<String> command, int expectedRC) throws IOException, InterruptedException {
         ProcessBuilder processBuilder = new ProcessBuilder(command);
         processBuilder.environment().put("DBB_HOME", EnvVars.getHome());
@@ -336,9 +330,7 @@ class StaticReportMigrationTests {
         char[] buffer = new char[16*1024];
 
         StringBuilder output = new StringBuilder();
-        System.out.println("Started.");
         while (System.currentTimeMillis() - startTime < maxTime) {
-            System.out.println("ELAPSED: " + (System.currentTimeMillis()-startTime))
             int charsRead = stdInput.read(buffer);
             if (charsRead == -1) break;
             
@@ -363,7 +355,6 @@ class StaticReportMigrationTests {
         // Output streams have been emptied, wait for process to finish if needed.
         if (process.isAlive()) {
             int timeLeft = maxTime - (System.currentTimeMillis() - startTime);
-            System.out.println("Time left = " + timeLeft);
             if (timeLeft > 0) {
                 if (!process.waitFor(timeLeft, TimeUnit.MILLISECONDS)) {
                     process.destroyForcibly();
