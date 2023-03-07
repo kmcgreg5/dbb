@@ -53,15 +53,13 @@ class StaticReportMigrationTests {
         @Test
         void testVersion() {
             System.out.println("Running version test.");
-            File origVersion = new File(EnvVars.getHome() + "/bin/version.properties");
+            File currVersion = new File(EnvVars.getHome() + "/bin/version.properties");
             File testVersion = new File(testDir, "../tests/samples/version.properties");
             File tempFile = new File("temp.properties");
-            File origLocation;
-            System.out.println(origVersion);
+            System.out.println(currVersion);
             try {
-                origLocation = new File(origVersion.getPath());
-                assertTrue(origVersion.renameTo(tempFile));
-                assertTrue(testVersion.renameTo(origLocation));
+                assertTrue(currVersion.renameTo(tempFile));
+                assertTrue(testVersion.renameTo(currVersion));
 
                 String errorMessage = "DBB Version 1.1.4 is not compatable with this tool";
                 List<String> command = new ArrayList<>();
@@ -75,10 +73,7 @@ class StaticReportMigrationTests {
                 output = runMigrationScript(command, 1);
                 assertTrue(output.get("out").contains(errorMessage));
             } finally {
-                System.out.println(testVersion);
-                System.out.println(origVersion);
-                testVersion.delete();
-                assertTrue(origVersion.renameTo(origLocation));
+                assertTrue(tempFile.renameTo(currVersion));
             }
             
             List<String> command = new ArrayList<>();
