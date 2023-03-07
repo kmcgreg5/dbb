@@ -59,8 +59,9 @@ class StaticReportMigrationTests {
             System.out.println(currVersion);
             try {
                 tempFile.delete();
-                assertTrue(currVersion.renameTo(tempFile));
-                assertTrue(testVersion.renameTo(currVersion));
+                assertTrue(currVersion.renameTo(tempFile), "Failed to move current version out.");
+                Files.copy(testVersion.toPath(), currVersion.toPath());
+                assertTrue(currVersion.exists(), "Failed to copy test version in.");
                 System.out.println("Successflly Moved Files");
                 String errorMessage = "DBB Version 1.1.4 is not compatable with this tool";
                 List<String> command = new ArrayList<>();
@@ -75,7 +76,7 @@ class StaticReportMigrationTests {
                 assertTrue(output.get("out").contains(errorMessage));
             } finally {
                 currVersion.delete();
-                assertTrue(tempFile.renameTo(currVersion));
+                assertTrue(tempFile.renameTo(currVersion), "Failed to reset current version.");
             }
             
             List<String> command = new ArrayList<>();
