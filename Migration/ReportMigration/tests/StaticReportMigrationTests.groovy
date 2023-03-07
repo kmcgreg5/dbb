@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import java.lang.Thread;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
@@ -349,7 +350,16 @@ class StaticReportMigrationTests {
             error.append(line);
             error.append("\n");
         }
-        process.destroyForcibly();
+        if (process.isAlive()) {
+            int timeLeft = maxTime - System.currentTimeMillis() - startTime;
+            if (timeLeft > 0) {
+                if (!process.waitFor(timeLeft, TimeUnit.MILLISECONDS)) {
+                    process.destroyForcibly();
+                }
+            } else {
+                process.destroyForcibly();
+            }
+        }
         
         int rc = process.exitValue();
         String errorString = error.toString();
