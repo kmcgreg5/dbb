@@ -56,6 +56,7 @@ class StaticReportMigrationTests {
          * Can be tested with jar-uf to replace version.properties in dbb.core-<>.jar
          * Non-functional test.
          */
+        @Test
         @Order(1)
         void testVersion() {
             System.out.println("Running version test.");
