@@ -72,7 +72,7 @@ class StaticReportMigrationTests {
                 List<String> command = new ArrayList<>();
                 command.add("jar");
                 command.add("-uf");
-                command.add(EnvVars.getHome() + "/lib/dbb.core*.jar");
+                command.add(EnvVars.getHome() + "/lib/dbb.core_2.0.0.jar");
                 command.add(versionPackage.getPath());
                 runProcess(command, 0);
 
@@ -94,7 +94,7 @@ class StaticReportMigrationTests {
                 List<String> command = new ArrayList<>();
                 command.add("jar");
                 command.add("-uf");
-                command.add(EnvVars.getHome() + "/lib/dbb.core*.jar");
+                command.add(EnvVars.getHome() + "/lib/dbb.core_2.0.0.jar");
                 command.add(versionPackage.getPath());
                 try {
                     runProcess(command, 0);
