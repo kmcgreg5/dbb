@@ -73,6 +73,8 @@ class StaticReportMigrationTests {
                 output = runMigrationScript(command, 1);
                 assertTrue(output.get("out").contains(errorMessage));
             } finally {
+                tempFile.delete();
+                currVersion.delete();
                 assertTrue(tempFile.renameTo(currVersion));
             }
             
