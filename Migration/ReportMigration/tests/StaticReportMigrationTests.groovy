@@ -334,6 +334,7 @@ class StaticReportMigrationTests {
 
         StringBuilder output = new StringBuilder();
         while (System.currentTimeMillis() - startTime < maxTime) {
+            System.out.println("ELAPSED: " + (System.currentTimeMillis()-startTime))
             int charsRead = stdInput.read(buffer);
             if (charsRead == -1) break;
             
