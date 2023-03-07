@@ -16,12 +16,17 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.ClassOrderer;
 
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@TestClassOrder(ClassOrderer.OrderAnnotation.class)
 class StaticReportMigrationTests {
     private static final String GROUP = "Static-Report-Migration-Test";
     private static final String LABEL = "buildresult";
@@ -30,43 +35,58 @@ class StaticReportMigrationTests {
     private static final String PW_FILE_KEY = "test-pwFile";
 
     private static File testDir = new File(StaticReportMigrationTests.getProtectionDomain().getCodeSource().getLocation().getPath()).getParentFile();
-    private static String script = new File(testDir, "../bin/static-report-migration.sh").getPath();
+    private static String listScript = new File(testDir, "../bin/create-migration-list.sh").getPath();
+    private static String migrateScript = new File(testDir, "../bin/migrate-list.sh").getPath();
 
     private static String url;
     private static String id;
     private static File passwordFile;
     private static MetadataStore store;
 
+    
     @Nested
-    @TestInstance(Lifecycle.PER_CLASS)
-    class IntegrationTests {
-        @BeforeAll
-        static void setupCollection() throws Exception {
-            System.out.println("Setting up collection.");
-            store.deleteBuildResults(GROUP);
-            store.deleteCollection(GROUP);
+    //@TestInstance(Lifecycle.PER_CLASS)
+    @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+    @Order(1)
+    class ListCreationTests {
+        @Test
+        void testVersion() {
+            System.out.println("Running version test.");
+            File origVersion = new File(EnvVars.getHome() + "bin/version.properties");
+            File testVersion = new File(testDir, "../tests/samples/version.properties");
+            File tempFile = new File("temp.properties");
+            File tempVar;
+            System.out.println(origVersion);
+            try {
+                tempVar = new File(origVersion.getPath());
+                assertTrue(origVersion.renameTo(temp));
+                assertTrue(testVersion.renameTo(tempVar));
 
-            store.createCollection(GROUP);
-            BuildResult newResult = store.createBuildResult(GROUP, LABEL);
-            newResult.setState(BuildResult.COMPLETE);
+                String errorMessage = "DBB Version 1.1.4 is not compatable with this tool";
+                List<String> command = new ArrayList<>();
+                command.add(listScript);
+                Map<String, String> output = runMigrationScript(command, 1);
+                assertTrue(output.get("out").contains(errorMessage));
 
-            String samplesFolder = "samples/";
-            // Report data is labled with the version used to create it, in case of differences between versions
-            newResult.setBuildReportData(new FileInputStream(new File(testDir, samplesFolder + "result-data-2.0.0.json")));
-            newResult.setBuildReport(new FileInputStream(new File(testDir, samplesFolder + "report.html")));
-
-            System.out.println("Asserting test file content.");
-            String htmlString = '{"date":"28-Feb-2022 17:26:26","build":"151","id":"DBB API Version","type":"VERSION","version":"1.1.3"}';
-            String dataString = '{"date":"06-Dec-2022 17:13:58","build":"113","id":"DBB API Version","type":"VERSION","version":"2.0.0"}';
-            List<BuildResult> results = store.getBuildResults(Collections.singletonMap(QueryParms.GROUP, GROUP));
-            for (BuildResult result : results) {
-                assertEquals(GROUP, result.getGroup());
-                assertEquals(LABEL, result.getLabel());
-                assertTrue(Utils.readFromStream(result.getBuildReport().getContent(), "UTF-8").contains(htmlString));
-                assertTrue(Utils.readFromStream(result.getBuildReportData().getContent(), "UTF-8").contains(dataString));
+                command = new ArrayList<>();
+                command.add(migrateScript);
+                output = runMigrationScript(command, 1);
+                assertTrue(output.get("out").contains(errorMessage));
+            } finally {
+                testVersion.delete();
+                assertTrue(origVersion.renameTo(tempVar));
             }
-            assertTrue(results.size() == 1);
+            
+            List<String> command = new ArrayList<>();
+            command.add(listScript);
         }
+    }
+
+    @Nested
+    //@TestInstance(Lifecycle.PER_CLASS)
+    @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+    @Order(2)
+    class IntegrationTests {
 
         @Test
         void migrationTest() {
@@ -139,6 +159,8 @@ class StaticReportMigrationTests {
         passwordFile = new File(System.getProperty(PW_FILE_KEY));
 
         store = MetadataStoreFactory.createDb2MetadataStore(url, id, passwordFile);
+    
+        setupCollection();
     }
 
     @AfterAll
@@ -208,5 +230,32 @@ class StaticReportMigrationTests {
         returnMap.put("out", outputString);
         returnMap.put("err", errorString);
         return returnMap;
+    }
+
+    private static void setupCollection() throws Exception {
+        System.out.println("Setting up collection.");
+        store.deleteBuildResults(GROUP);
+        store.deleteCollection(GROUP);
+
+        store.createCollection(GROUP);
+        BuildResult newResult = store.createBuildResult(GROUP, LABEL);
+        newResult.setState(BuildResult.COMPLETE);
+
+        String samplesFolder = "samples/";
+        // Report data is labled with the version used to create it, in case of differences between versions
+        newResult.setBuildReportData(new FileInputStream(new File(testDir, samplesFolder + "result-data-2.0.0.json")));
+        newResult.setBuildReport(new FileInputStream(new File(testDir, samplesFolder + "report.html")));
+
+        System.out.println("Asserting test file content.");
+        String htmlString = '{"date":"28-Feb-2022 17:26:26","build":"151","id":"DBB API Version","type":"VERSION","version":"1.1.3"}';
+        String dataString = '{"date":"06-Dec-2022 17:13:58","build":"113","id":"DBB API Version","type":"VERSION","version":"2.0.0"}';
+        List<BuildResult> results = store.getBuildResults(Collections.singletonMap(QueryParms.GROUP, GROUP));
+        for (BuildResult result : results) {
+            assertEquals(GROUP, result.getGroup());
+            assertEquals(LABEL, result.getLabel());
+            assertTrue(Utils.readFromStream(result.getBuildReport().getContent(), "UTF-8").contains(htmlString));
+            assertTrue(Utils.readFromStream(result.getBuildReportData().getContent(), "UTF-8").contains(dataString));
+        }
+        assertTrue(results.size() == 1);
     }
 }
