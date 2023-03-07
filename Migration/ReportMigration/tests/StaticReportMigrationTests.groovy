@@ -53,7 +53,7 @@ class StaticReportMigrationTests {
         @Test
         void testVersion() {
             System.out.println("Running version test.");
-            File origVersion = new File(EnvVars.getHome() + "bin/version.properties");
+            File origVersion = new File(EnvVars.getHome() + "/bin/version.properties");
             File testVersion = new File(testDir, "../tests/samples/version.properties");
             File tempFile = new File("temp.properties");
             File origLocation;
