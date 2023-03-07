@@ -75,7 +75,7 @@ class StaticReportMigrationTests {
                 runProcess(command, 0);
 
                 String errorMessage = "DBB Version 1.1.4 is not compatable with this tool";
-                List<String> command = new ArrayList<>();
+                command = new ArrayList<>();
                 command.add(listScript);
                 Map<String, String> output = runProcess(command, 1);
                 assertTrue(output.get("out").contains(errorMessage));
