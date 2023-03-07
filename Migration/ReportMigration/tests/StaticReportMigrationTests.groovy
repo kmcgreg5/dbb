@@ -263,8 +263,11 @@ class StaticReportMigrationTests {
 
     private static void setupCollection() throws Exception {
         System.out.println("Setting up collection.");
+        // Clear old collection data
         store.deleteBuildResults(GROUP);
         store.deleteCollection(GROUP);
+        store.deleteBuildResults(GROUP2);
+        store.deleteCollection(GROUP2);
 
         // Create first collection
         store.createCollection(GROUP);
