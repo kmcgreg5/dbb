@@ -5,6 +5,7 @@ import com.ibm.dbb.metadata.BuildResult.QueryParms;
 import com.ibm.dbb.EnvVars;
 import com.ibm.dbb.build.internal.Utils;
 import com.ibm.json.java.JSONObject;
+import com.ibm.dbb.build.VersionInfo;
 
 import java.util.concurrent.TimeUnit;
 import java.lang.Thread;
@@ -67,12 +68,14 @@ class StaticReportMigrationTests {
             File versionPackage = new File("com/ibm/dbb/build/internal/version.properties");
             versionPackage.getParentFile().mkdirs();
             Files.copy(testVersion.toPath(), versionPackage.toPath());
+            String version = VersionInfo.getInstance().getVersion();
+            VersionInfo.staticReset();
             try {
                 // Update version file within jar
                 List<String> command = new ArrayList<>();
                 command.add("jar");
                 command.add("-uf");
-                command.add(EnvVars.getHome() + "/lib/dbb.core_2.0.0.jar");
+                command.add(EnvVars.getHome() + "/lib/dbb.core_" + version + ".jar");
                 command.add(versionPackage.getPath());
                 runProcess(command, 0);
 
@@ -94,7 +97,7 @@ class StaticReportMigrationTests {
                 List<String> command = new ArrayList<>();
                 command.add("jar");
                 command.add("-uf");
-                command.add(EnvVars.getHome() + "/lib/dbb.core_2.0.0.jar");
+                command.add(EnvVars.getHome() + "/lib/dbb.core_" + version + ".jar");
                 command.add(versionPackage.getPath());
                 try {
                     runProcess(command, 0);
@@ -333,6 +336,7 @@ class StaticReportMigrationTests {
         char[] buffer = new char[16*1024];
 
         StringBuilder output = new StringBuilder();
+        System.out.println("Started.");
         while (System.currentTimeMillis() - startTime < maxTime) {
             System.out.println("ELAPSED: " + (System.currentTimeMillis()-startTime))
             int charsRead = stdInput.read(buffer);
