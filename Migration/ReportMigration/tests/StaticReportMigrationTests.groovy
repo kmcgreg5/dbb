@@ -69,6 +69,7 @@ class StaticReportMigrationTests {
                 command.add(listScript);
                 Map<String, String> output = runMigrationScript(command, 1);
                 System.out.println(output.get("out"));
+                System.out.println(output.get("err"));
                 assertTrue(output.get("out").contains(errorMessage));
 
                 command = new ArrayList<>();
