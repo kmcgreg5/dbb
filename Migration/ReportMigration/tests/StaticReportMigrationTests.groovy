@@ -61,7 +61,7 @@ class StaticReportMigrationTests {
                 tempFile.delete();
                 assertTrue(currVersion.renameTo(tempFile));
                 assertTrue(testVersion.renameTo(currVersion));
-
+                System.out.println("Successflly Moved Files");
                 String errorMessage = "DBB Version 1.1.4 is not compatable with this tool";
                 List<String> command = new ArrayList<>();
                 command.add(listScript);
