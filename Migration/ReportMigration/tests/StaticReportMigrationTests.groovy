@@ -358,7 +358,7 @@ class StaticReportMigrationTests {
         }
         // Output streams have been emptied, wait for process to finish if needed.
         if (process.isAlive()) {
-            int timeLeft = maxTime - System.currentTimeMillis() - startTime;
+            int timeLeft = maxTime - (System.currentTimeMillis() - startTime);
             System.out.println("Time left = " + timeLeft);
             if (timeLeft > 0) {
                 if (!process.waitFor(timeLeft, TimeUnit.MILLISECONDS)) {
