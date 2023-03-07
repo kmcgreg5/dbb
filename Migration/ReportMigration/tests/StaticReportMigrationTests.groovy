@@ -75,12 +75,14 @@ class StaticReportMigrationTests {
                 command.add(versionPackage.getPath());
                 runProcess(command, 0);
 
+                // Run tests on the create-list script
                 String errorMessage = "DBB Version 1.1.4 is not compatable with this tool";
                 command = new ArrayList<>();
                 command.add(listScript);
                 Map<String, String> output = runProcess(command, 1);
                 assertTrue(output.get("out").contains(errorMessage));
 
+                // Run test on the migration script
                 command = new ArrayList<>();
                 command.add(migrateScript);
                 output = runProcess(command, 1);
@@ -347,7 +349,7 @@ class StaticReportMigrationTests {
             error.append(line);
             error.append("\n");
         }
-        process.destroy();
+        process.destroyForcibly();
         
         int rc = process.exitValue();
         String errorString = error.toString();
