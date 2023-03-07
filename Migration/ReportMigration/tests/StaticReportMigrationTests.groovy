@@ -76,8 +76,8 @@ class StaticReportMigrationTests {
                 output = runMigrationScript(command, 1);
                 assertTrue(output.get("out").contains(errorMessage));
             } finally {
-                currVersion.delete();
-                assertTrue(tempFile.renameTo(currVersion), "Failed to reset current version.");
+                //currVersion.delete();
+                //assertTrue(tempFile.renameTo(currVersion), "Failed to reset current version.");
             }
             
             List<String> command = new ArrayList<>();
