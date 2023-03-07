@@ -56,12 +56,12 @@ class StaticReportMigrationTests {
             File origVersion = new File(EnvVars.getHome() + "bin/version.properties");
             File testVersion = new File(testDir, "../tests/samples/version.properties");
             File tempFile = new File("temp.properties");
-            File tempVar;
+            File origLocation;
             System.out.println(origVersion);
             try {
-                tempVar = new File(origVersion.getPath());
-                assertTrue(origVersion.renameTo(temp));
-                assertTrue(testVersion.renameTo(tempVar));
+                origLocation = new File(origVersion.getPath());
+                assertTrue(origVersion.renameTo(tempFile));
+                assertTrue(testVersion.renameTo(origLocation));
 
                 String errorMessage = "DBB Version 1.1.4 is not compatable with this tool";
                 List<String> command = new ArrayList<>();
@@ -75,8 +75,10 @@ class StaticReportMigrationTests {
                 output = runMigrationScript(command, 1);
                 assertTrue(output.get("out").contains(errorMessage));
             } finally {
+                System.out.println(testVersion);
+                System.out.println(origVersion);
                 testVersion.delete();
-                assertTrue(origVersion.renameTo(tempVar));
+                assertTrue(origVersion.renameTo(origLocation));
             }
             
             List<String> command = new ArrayList<>();
@@ -94,7 +96,7 @@ class StaticReportMigrationTests {
         void migrationTest() {
             System.out.println("Running migration test.");
             List<String> command = new ArrayList<>();
-            command.add(script);
+            command.add(listScript);
             command.add("--url");
             command.add(url);
             command.add("--id");
@@ -112,7 +114,7 @@ class StaticReportMigrationTests {
         void badPasswordFileTest() {
             System.out.println("Running bad password file test.");
             List<String> command = new ArrayList<>();
-            command.add(script);
+            command.add(listScript);
             command.add("--url");
             command.add(url);
             command.add("--id");
@@ -129,7 +131,7 @@ class StaticReportMigrationTests {
         void badPasswordTest() {
             System.out.println("Running bad password test.");
             List<String> command = new ArrayList<>();
-            command.add(script);
+            command.add(listScript);
             command.add("--url");
             command.add(url);
             command.add("--id");
