@@ -16,8 +16,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.MethodOrderer;
@@ -51,7 +49,6 @@ class StaticReportMigrationTests {
 
     
     @Nested
-    //@TestInstance(Lifecycle.PER_CLASS)
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
     @Order(1)
     class ListCreationTests {
@@ -59,6 +56,7 @@ class StaticReportMigrationTests {
          * Can be tested with jar-uf to replace version.properties in dbb.core-<>.jar
          * Non-functional test.
          */
+        @Order(1)
         void testVersion() {
             System.out.println("Running version test.");
             File currVersion = new File(EnvVars.getHome() + "/bin/version.properties");
@@ -91,6 +89,7 @@ class StaticReportMigrationTests {
         }
 
         @Test
+        @Order(2)
         void testWildcard() {
             System.out.println("Running group wildcard tests.");
             List<String> command = new ArrayList<>();
@@ -113,6 +112,7 @@ class StaticReportMigrationTests {
         }
 
         @Test
+        @Order(3)
         void testWildcardSingleSegment() {
             System.out.println("Running group wildcard single-segment tests.");
             List<String> command = new ArrayList<>();
@@ -135,6 +135,7 @@ class StaticReportMigrationTests {
         }
 
         @Test
+        @Order(5) // Execute last to prepare list for migration test
         void testWildcardMultiSegment() {
             System.out.println("Running group wildcard multi-segment tests.");
             List<String> command = new ArrayList<>();
@@ -156,6 +157,7 @@ class StaticReportMigrationTests {
         }
 
         @Test
+        @Order(4)
         void testExactMatch() {
             System.out.println("Running group exact match tests.");
             List<String> command = new ArrayList<>();
@@ -178,61 +180,25 @@ class StaticReportMigrationTests {
     }
 
     @Nested
-    //@TestInstance(Lifecycle.PER_CLASS)
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
     @Order(2)
-    class IntegrationTests {
+    class MigrationTests {
 
         @Test
         void migrationTest() {
             System.out.println("Running migration test.");
             List<String> command = new ArrayList<>();
-            command.add(listScript);
+            command.add(migrateScript);
+            command.add(jsonfile.getPath());
             command.add("--url");
             command.add(url);
             command.add("--id");
             command.add(id);
             command.add("--pwFile");
             command.add(passwordFile.getPath());
-            command.add("--grp");
-            command.add(GROUP);
-            //Map<String, String> output = runMigrationScript(command, 0);
-            //assertTrue(output.get("err").trim().isEmpty(), String.format("Error stream is not empty\nOUT:\n%s\n\nERR:\n%s", output.get("out"), output.get("err")));
-            //validateResults();
-        }
-
-        @Test
-        void badPasswordFileTest() {
-            System.out.println("Running bad password file test.");
-            List<String> command = new ArrayList<>();
-            command.add(listScript);
-            command.add("--url");
-            command.add(url);
-            command.add("--id");
-            command.add(id);
-            command.add("--pwFile");
-            command.add("~/nonexistantfile");
-            command.add("--grp");
-            command.add(GROUP);
-            //Map<String, String> output = runMigrationScript(command, 1);
-            //assertTrue(output.get("out").contains("There was an issue reading your password file"));
-        }
-
-        @Test
-        void badPasswordTest() {
-            System.out.println("Running bad password test.");
-            List<String> command = new ArrayList<>();
-            command.add(listScript);
-            command.add("--url");
-            command.add(url);
-            command.add("--id");
-            command.add(id);
-            command.add("--pw");
-            command.add("1eMBM6+tJspEoJiwJqfKqA==");
-            command.add("--grp");
-            command.add(GROUP);
-            //Map<String, String> output = runMigrationScript(command, 1);
-            //assertTrue(output.get("out").contains("There was an issue connecting to the Metadata Store"));
+            Map<String, String> output = runMigrationScript(command, 0);
+            assertTrue(output.get("err").trim().isEmpty(), String.format("Error stream is not empty\nOUT:\n%s\n\nERR:\n%s", output.get("out"), output.get("err")));
+            validateResults();
         }
     }
 
@@ -261,10 +227,11 @@ class StaticReportMigrationTests {
     @AfterAll
     static void cleanupStore() {
         System.out.println("Cleaning up store.");
-        //store.deleteBuildResults(GROUP);
-        //store.deleteCollection(GROUP);
-        //store.deleteBuildResults(GROUP2);
-        //store.deleteCollection(GROUP2);
+        store.deleteBuildResults(GROUP);
+        store.deleteCollection(GROUP);
+        store.deleteBuildResults(GROUP2);
+        store.deleteCollection(GROUP2);
+        jsonFile.delete();
     }
 
     private static void setupCollection() throws Exception {
