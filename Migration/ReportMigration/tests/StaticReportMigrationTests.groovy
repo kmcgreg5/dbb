@@ -90,6 +90,7 @@ class StaticReportMigrationTests {
             command.add(listScript);
         }
 
+        @Test
         void testWildcard() {
             System.out.println("Running wildcard tests.");
             List<String> command = new ArrayList<>();
@@ -110,6 +111,7 @@ class StaticReportMigrationTests {
             validateMigrationList(jsonFile, expected);
         }
 
+        @Test
         void testWildcardSingleSegment() {
             System.out.println("Running wildcard tests.");
             List<String> command = new ArrayList<>();
@@ -130,6 +132,7 @@ class StaticReportMigrationTests {
             validateMigrationList(jsonFile, expected);
         }
 
+        @Test
         void testWildcardMultiSegment() {
             System.out.println("Running wildcard tests.");
             List<String> command = new ArrayList<>();
@@ -149,6 +152,7 @@ class StaticReportMigrationTests {
             validateMigrationList(jsonFile, expected);
         }
 
+        @Test
         void testExactMatch() {
             System.out.println("Running wildcard tests.");
             List<String> command = new ArrayList<>();
