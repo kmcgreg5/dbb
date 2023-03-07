@@ -42,7 +42,7 @@ class StaticReportMigrationTests {
     private static File testDir = new File(StaticReportMigrationTests.getProtectionDomain().getCodeSource().getLocation().getPath()).getParentFile();
     private static String listScript = new File(testDir, "../bin/create-migration-list.sh").getPath();
     private static String migrateScript = new File(testDir, "../bin/migrate-list.sh").getPath();
-    private static String jsonFile = new File("list.json");
+    private static File jsonFile = new File("list.json");
 
     private static String url;
     private static String id;
