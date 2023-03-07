@@ -92,9 +92,10 @@ class StaticReportMigrationTests {
 
         @Test
         void testWildcard() {
-            System.out.println("Running wildcard tests.");
+            System.out.println("Running group wildcard tests.");
             List<String> command = new ArrayList<>();
             command.add(listScript);
+            command.add(jsonFile.getPath());
             command.add("--url");
             command.add(url);
             command.add("--id");
@@ -113,9 +114,10 @@ class StaticReportMigrationTests {
 
         @Test
         void testWildcardSingleSegment() {
-            System.out.println("Running wildcard tests.");
+            System.out.println("Running group wildcard single-segment tests.");
             List<String> command = new ArrayList<>();
             command.add(listScript);
+            command.add(jsonFile.getPath());
             command.add("--url");
             command.add(url);
             command.add("--id");
@@ -134,9 +136,10 @@ class StaticReportMigrationTests {
 
         @Test
         void testWildcardMultiSegment() {
-            System.out.println("Running wildcard tests.");
+            System.out.println("Running group wildcard multi-segment tests.");
             List<String> command = new ArrayList<>();
             command.add(listScript);
+            command.add(jsonFile.getPath());
             command.add("--url");
             command.add(url);
             command.add("--id");
@@ -154,9 +157,10 @@ class StaticReportMigrationTests {
 
         @Test
         void testExactMatch() {
-            System.out.println("Running wildcard tests.");
+            System.out.println("Running group exact match tests.");
             List<String> command = new ArrayList<>();
             command.add(listScript);
+            command.add(jsonFile.getPath());
             command.add("--url");
             command.add(url);
             command.add("--id");
@@ -259,6 +263,8 @@ class StaticReportMigrationTests {
         System.out.println("Cleaning up store.");
         //store.deleteBuildResults(GROUP);
         //store.deleteCollection(GROUP);
+        //store.deleteBuildResults(GROUP2);
+        //store.deleteCollection(GROUP2);
     }
 
     private static void setupCollection() throws Exception {
