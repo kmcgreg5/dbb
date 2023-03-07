@@ -58,6 +58,7 @@ class StaticReportMigrationTests {
             File tempFile = new File("temp.properties");
             System.out.println(currVersion);
             try {
+                tempFile.delete();
                 assertTrue(currVersion.renameTo(tempFile));
                 assertTrue(testVersion.renameTo(currVersion));
 
@@ -73,7 +74,6 @@ class StaticReportMigrationTests {
                 output = runMigrationScript(command, 1);
                 assertTrue(output.get("out").contains(errorMessage));
             } finally {
-                tempFile.delete();
                 currVersion.delete();
                 assertTrue(tempFile.renameTo(currVersion));
             }
