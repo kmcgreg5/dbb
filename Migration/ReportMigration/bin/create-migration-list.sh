@@ -20,15 +20,19 @@ if [ -z "${DBB_HOME:+set}" ]; then
    exit 1
 fi
 
+# Best way of iterating through arguments I've found
 for arg do
     shift
-    #[ "$arg" = "--grp" ] && [ "$1" = "*" ] && shift; continue
-    #[ "$arg" = "--debug" ] && debug=-Dorg.slf4j.simpleLogger
+    [ "$arg" = "--grp" ] && [ "$1" = "*" ] && shift && allmatch=true && continue 2
+    [ "$arg" = "--debug" ] && debug=-Dorg.slf4j.simpleLogger
     set -- "$@" "$arg"
 done
 
 SCRIPT_DIR=$(dirname "$0")
 
-echo "$@"
-#$DBB_HOME/bin/groovyz ${debug} $SCRIPT_DIR/../groovy/create-migration-list.groovy "$@"
+if [ "$allmatch" = true ]; then
+    $DBB_HOME/bin/groovyz ${debug} $SCRIPT_DIR/../groovy/create-migration-list.groovy "$@" --grp ",*"
+else
+    $DBB_HOME/bin/groovyz ${debug} $SCRIPT_DIR/../groovy/create-migration-list.groovy "$@"
+fi
 exit $?
