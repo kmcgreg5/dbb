@@ -58,7 +58,6 @@ try {
         }
     }
     
-    // Collect groups
     List<String> groups = collectGroups(options.grps ?: null, options.grpf ? options.grpf as File : null);
     List<String> resultGroups = connectionScript.getBuildResultGroups();
     // Match input groups to collection groups
@@ -164,7 +163,6 @@ private List<String> collectGroups(List<String> groupsArg, File groupsFileArg) {
         groupsFileArg.eachLine { group ->
             group = group.trim();
             // Remove trailing comma in case a CSV is passed in.
-            if (group.endsWith(",")) group = group.substring(0, group.length()-1);
             if (group.isEmpty()) return;
             if (groups.contains(group) == false) {
                 groups.add(group);

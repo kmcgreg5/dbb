@@ -20,14 +20,15 @@ if [ -z "${DBB_HOME:+set}" ]; then
    exit 1
 fi
 
-for arg in "$@"
-do
-   case "$arg" in
-      --debug)    debug=-Dorg.slf4j.simpleLogger;;
-   esac
+for arg do
+    shift
+    [ "$arg" = "--grp" ] && [ "$1" = "*" ] && shift; continue
+    [ "$arg" = "--debug" ] && debug=-Dorg.slf4j.simpleLogger
+    set -- "$@" "$arg"
 done
 
 SCRIPT_DIR=$(dirname "$0")
 
-$DBB_HOME/bin/groovyz ${debug} $SCRIPT_DIR/../groovy/create-migration-list.groovy "$@"
+echo "$@"
+#$DBB_HOME/bin/groovyz ${debug} $SCRIPT_DIR/../groovy/create-migration-list.groovy "$@"
 exit $?

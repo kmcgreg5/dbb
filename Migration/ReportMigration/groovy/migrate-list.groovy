@@ -74,7 +74,6 @@ try {
         connectionScript.convertBuildReports(results);
     }
 } catch (Exception error) {
-    throw error;
     println(error.getMessage());
     System.exit(1);
 }
