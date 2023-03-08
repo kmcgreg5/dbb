@@ -22,8 +22,8 @@ fi
 
 for arg do
     shift
-    [ "$arg" = "--grp" ] && [ "$1" = "*" ] && shift; continue
-    [ "$arg" = "--debug" ] && debug=-Dorg.slf4j.simpleLogger
+    #[ "$arg" = "--grp" ] && [ "$1" = "*" ] && shift; continue
+    #[ "$arg" = "--debug" ] && debug=-Dorg.slf4j.simpleLogger
     set -- "$@" "$arg"
 done
 
