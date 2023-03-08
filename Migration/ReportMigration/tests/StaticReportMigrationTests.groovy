@@ -190,7 +190,7 @@ class StaticReportMigrationTests {
         }
 
         @Test
-        @Order(5) // Execute last to prepare list for migration test
+        @Order(6) // Execute last to prepare list for migration test
         void testWildcardMultiSegment() {
             System.out.println("Running group wildcard multi-segment tests.");
             List<String> command = new ArrayList<>();
@@ -229,6 +229,29 @@ class StaticReportMigrationTests {
 
             Map<String, String> output = runProcess(command, 0);
             Map<String, List<String>> expected = new HashMap<>();
+            expected.put(GROUP2, Arrays.asList(LABEL));
+            validateMigrationList(jsonFile, expected);
+        }
+
+        @Test
+        @Order(5)
+        void testFileMatch() {
+            System.out.println("Running group from file tests.");
+            List<String> command = new ArrayList<>();
+            command.add(listScript);
+            command.add(jsonFile.getPath());
+            command.add("--url");
+            command.add(url);
+            command.add("--id");
+            command.add(id);
+            command.add("--pwFile");
+            command.add(passwordFile.getPath());
+            command.add("--grpf");
+            command.add(new File(testDir, "samples/groups.txt").getPath());
+
+            Map<String, String> output = runProcess(command, 0);
+            Map<String, List<String>> expected  = new HashMap<>();
+            expected.put(GROUP, Arrays.asList(LABEL));
             expected.put(GROUP2, Arrays.asList(LABEL));
             validateMigrationList(jsonFile, expected);
         }
