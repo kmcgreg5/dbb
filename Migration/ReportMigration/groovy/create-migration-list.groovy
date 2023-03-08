@@ -182,7 +182,7 @@ private List<String> collectGroups(List<String> groupsArg, File groupsFileArg) {
  */
 private List<String> matchGroups(List<String> resultGroups, List<String> groups) {
     // Sort group list from longest to shortest to match the most specific entries first
-    groups.sort(Comparator.comparingInt(String::length));
+    groups.sort(Comparator.comparingInt(String::length).reversed());
 
     // Return the entire set if '*' is passed in as a group
     List<String> matchedGroups = new ArrayList<>();
