@@ -1,5 +1,12 @@
 import com.ibm.dbb.build.VersionInfo;
 
+/**
+ * Checks that the input version is equal to or greater than the input leastVersion.
+ * 
+ * @param version       The version number to check.
+ * @param leastVersion  The inclusive version number to check against.
+ * @return              True if the version is acceptable, false otherwise.
+ */
 boolean isVersionUnder(String version, String leastVersion) {
     int[] versionArr = Arrays.stream(version.split("\\.")).mapToInt(Integer::parseInt).toArray();
     int[] leastAcceptableVersion = Arrays.stream(leastVersion.split("\\.")).mapToInt(Integer::parseInt).toArray(); // Inclusive
@@ -27,6 +34,13 @@ boolean isVersionUnder(String version, String leastVersion) {
     return true;
 }
 
+/**
+ * Checks that the input version is less than the input mostVersion.
+ * 
+ * @param version       The version number to check.
+ * @param mostVersion  The exclusive version number to check against.
+ * @return             True if the version is acceptable, false otherwise.
+ */
 boolean isVersionOver(String version, String mostVersion) {
     int[] versionArr = Arrays.stream(version.split("\\.")).mapToInt(Integer::parseInt).toArray();
     int[] mostAcceptableVersion = Arrays.stream(mostVersion.split("\\.")).mapToInt(Integer::parseInt).toArray(); // Non-inclusive
@@ -52,6 +66,13 @@ boolean isVersionOver(String version, String mostVersion) {
     return true;
 }
 
+/**
+ * Retrieves the version from the DBB API and checks it against the input version strings.
+ * 
+ * @param leastAcceptableVersion    The least acceptable version (inclusive).
+ * @param mostAcceptableVersion     The most acceptable version (exclusive).
+ * @return                          A filled error message if a check failed, an empty string otherwise.
+ */
 String checkVersion(String leastAcceptableVersion, String mostAcceptableVersion) {
     String version = getVersion();
     String errorMessage;
@@ -63,6 +84,11 @@ String checkVersion(String leastAcceptableVersion, String mostAcceptableVersion)
     return errorMessage;
 }
 
+/**
+ * Returns the DBB version from its API.
+ * 
+ * @return  the current version of DBB.
+ */
 String getVersion() {
     return VersionInfo.getInstance().getVersion();
 }

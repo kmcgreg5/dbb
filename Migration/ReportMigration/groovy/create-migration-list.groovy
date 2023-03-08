@@ -84,6 +84,16 @@ try {
     System.exit(1);
 }
 
+/****************************
+**  Argument Parsing       **
+*****************************/
+
+/**
+ * Parses arguments, printing help and exiting if required.
+ * 
+ * @param args  The input arguments to parse.
+ * @return      An OptionAccessor at which to access the parsed options.
+ */
 private OptionAccessor getOptions(String[] args) {
     String usage = "create-migration-list.sh <json-file> [options] [--help]";
     String header = "Using DBB version ${versionUtils.getVersion()}";
@@ -132,6 +142,13 @@ private OptionAccessor getOptions(String[] args) {
     return options;
 }
 
+/**
+ * Collects groups from an input list and a file that seperates groups with newlines.
+ * 
+ * @param groupsArg     A list of groups passed in through the CLI, can be null.
+ * @param groupsFileArg A file containing groups seperated by newlines, appended commas are removed to support CSV.
+ * @return              the list of groups gathered.
+ */
 private List<String> collectGroups(List<String> groupsArg, File groupsFileArg) {
     List<String> groups = new ArrayList<>();
     // Pull groups out of argument list and file argument
@@ -146,9 +163,9 @@ private List<String> collectGroups(List<String> groupsArg, File groupsFileArg) {
     if (groupsFileArg != null) {
         groupsFileArg.eachLine { group ->
             group = group.trim();
-            if (group.isEmpty()) return;
             // Remove trailing comma in case a CSV is passed in.
             if (group.endsWith(",")) group = group.substring(0, group.length()-1);
+            if (group.isEmpty()) return;
             if (groups.contains(group) == false) {
                 groups.add(group);
             }
@@ -158,6 +175,13 @@ private List<String> collectGroups(List<String> groupsArg, File groupsFileArg) {
     return groups;
 }
 
+/**
+ * Match wildcard and exact groups against a list of groups
+ * 
+ * @param resultGroups  The groups to match against.
+ * @param groups        The groups to look for.
+ * @return              A list of groups that are present in the resultGroups list.
+ */
 private List<String> matchGroups(List<String> resultGroups, List<String> groups) {
     // Sort group list from longest to shortest to match the most specific entries first
     groups.sort(Comparator.comparingInt(String::length));
@@ -191,7 +215,7 @@ private List<String> matchGroups(List<String> resultGroups, List<String> groups)
 
             // Iterate over the items left to match
             for (String matchText : matchItems) {
-                // Same functions as the stream used to make the initial set, but different types and no handling for initial wildcard (*)
+                // Same functions as the stream used to make the initial set, but different types and no handling for initial wildcard (*word)
                 partialMatches = partialMatches.entrySet().stream().filter(entry -> {
                     return entry.getValue().contains(matchText);
                 }).collect(Collectors.toMap(Map.Entry::getKey, entry -> { // Remove matched string from value

@@ -50,6 +50,37 @@ class StaticReportMigrationTests {
     private static File passwordFile;
     private static MetadataStore store;
 
+    @BeforeAll
+    static void setupStore() throws Exception {
+        System.out.println("Setting up store.");
+        if (System.getProperties().containsKey(URL_KEY) == false) {
+            fail(String.format("Missing URL system property '%s'.", URL_KEY));
+        }
+        if (System.getProperties().containsKey(ID_KEY) == false) {
+            fail(String.format("Missing ID system property '%s'.", ID_KEY));
+        }
+        if (System.getProperties().containsKey(PW_FILE_KEY) == false) {
+            fail(String.format("Missing Password File system property '%s'.", PW_FILE_KEY));
+        }
+
+        url = System.getProperty(URL_KEY);
+        id = System.getProperty(ID_KEY);
+        passwordFile = new File(System.getProperty(PW_FILE_KEY));
+
+        store = MetadataStoreFactory.createDb2MetadataStore(url, id, passwordFile);
+    
+        setupCollection();
+    }
+
+    @AfterAll
+    static void cleanupStore() {
+        System.out.println("Cleaning up store.");
+        store.deleteBuildResults(GROUP);
+        store.deleteCollection(GROUP);
+        store.deleteBuildResults(GROUP2);
+        store.deleteCollection(GROUP2);
+        jsonFile.delete();
+    }
     
     @Nested
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -88,6 +119,7 @@ class StaticReportMigrationTests {
                 output = runProcess(command, 1);
                 assertTrue(output.get("out").contains(errorMessage));
             } finally {
+                // Replace the version file with the original
                 versionPackage.delete();
                 Files.copy(Paths.get(EnvVars.getHome() + "/bin/version.properties"), versionPackage.toPath());
                 List<String> command = new ArrayList<>();
@@ -107,7 +139,7 @@ class StaticReportMigrationTests {
                     }
                 }
             }
-
+            // Check version was reset properly
             assertEquals(VersionInfo.getInstance().getVersion(), version);
         }
 
@@ -223,38 +255,6 @@ class StaticReportMigrationTests {
             assertTrue(output.get("err").trim().isEmpty(), String.format("Error stream is not empty\nOUT:\n%s\n\nERR:\n%s", output.get("out"), output.get("err")));
             validateResults();
         }
-    }
-
-    @BeforeAll
-    static void setupStore() throws Exception {
-        System.out.println("Setting up store.");
-        if (System.getProperties().containsKey(URL_KEY) == false) {
-            fail(String.format("Missing URL system property '%s'.", URL_KEY));
-        }
-        if (System.getProperties().containsKey(ID_KEY) == false) {
-            fail(String.format("Missing ID system property '%s'.", ID_KEY));
-        }
-        if (System.getProperties().containsKey(PW_FILE_KEY) == false) {
-            fail(String.format("Missing Password File system property '%s'.", PW_FILE_KEY));
-        }
-
-        url = System.getProperty(URL_KEY);
-        id = System.getProperty(ID_KEY);
-        passwordFile = new File(System.getProperty(PW_FILE_KEY));
-
-        store = MetadataStoreFactory.createDb2MetadataStore(url, id, passwordFile);
-    
-        setupCollection();
-    }
-
-    @AfterAll
-    static void cleanupStore() {
-        System.out.println("Cleaning up store.");
-        store.deleteBuildResults(GROUP);
-        store.deleteCollection(GROUP);
-        store.deleteBuildResults(GROUP2);
-        store.deleteCollection(GROUP2);
-        jsonFile.delete();
     }
 
     private static void setupCollection() throws Exception {
