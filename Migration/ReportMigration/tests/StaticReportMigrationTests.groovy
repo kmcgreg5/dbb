@@ -81,6 +81,62 @@ class StaticReportMigrationTests {
         store.deleteCollection(GROUP2);
         jsonFile.delete();
     }
+
+    @Test
+    void testVersion() {
+        System.out.println("Running version test.");
+        File testVersion = new File(testDir, "samples/version.properties");
+
+        File versionPackage = new File("com/ibm/dbb/build/internal/version.properties");
+        versionPackage.getParentFile().mkdirs();
+        Files.copy(testVersion.toPath(), versionPackage.toPath());
+        String version = VersionInfo.getInstance().getVersion();
+        VersionInfo.staticReset();
+        try {
+            // Update version file within jar
+            List<String> command = new ArrayList<>();
+            command.add("jar");
+            command.add("-uf");
+            command.add(EnvVars.getHome() + "/lib/dbb.core_" + version + ".jar");
+            command.add(versionPackage.getPath());
+            runProcess(command, 0);
+
+            // Run tests on the create-list script
+            String errorMessage = "DBB Version 1.1.4 is not compatable with this tool";
+            command = new ArrayList<>();
+            command.add(listScript);
+            Map<String, String> output = runProcess(command, 1);
+            assertTrue(output.get("out").contains(errorMessage));
+
+            // Run test on the migration script
+            command = new ArrayList<>();
+            command.add(migrateScript);
+            output = runProcess(command, 1);
+            assertTrue(output.get("out").contains(errorMessage));
+        } finally {
+            // Replace the version file with the original
+            versionPackage.delete();
+            Files.copy(Paths.get(EnvVars.getHome() + "/bin/version.properties"), versionPackage.toPath());
+            List<String> command = new ArrayList<>();
+            command.add("jar");
+            command.add("-uf");
+            command.add(EnvVars.getHome() + "/lib/dbb.core_" + version + ".jar");
+            command.add(versionPackage.getPath());
+            try {
+                runProcess(command, 0);
+            } catch (Exception error) {
+                throw new Exception("Failed to reset DBB version info back to original state.", error);
+            } finally {
+                // Clear temp folder structure
+                while (versionPackage != null) {
+                    versionPackage.delete();
+                    versionPackage = versionPackage.getParentFile();
+                }
+            }
+        }
+        // Check version was reset properly
+        assertEquals(VersionInfo.getInstance().getVersion(), version);
+    }
     
     @Nested
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -88,63 +144,6 @@ class StaticReportMigrationTests {
     class ListCreationTests {
         @Test
         @Order(1)
-        void testVersion() {
-            System.out.println("Running version test.");
-            File testVersion = new File(testDir, "samples/version.properties");
-
-            File versionPackage = new File("com/ibm/dbb/build/internal/version.properties");
-            versionPackage.getParentFile().mkdirs();
-            Files.copy(testVersion.toPath(), versionPackage.toPath());
-            String version = VersionInfo.getInstance().getVersion();
-            VersionInfo.staticReset();
-            try {
-                // Update version file within jar
-                List<String> command = new ArrayList<>();
-                command.add("jar");
-                command.add("-uf");
-                command.add(EnvVars.getHome() + "/lib/dbb.core_" + version + ".jar");
-                command.add(versionPackage.getPath());
-                runProcess(command, 0);
-
-                // Run tests on the create-list script
-                String errorMessage = "DBB Version 1.1.4 is not compatable with this tool";
-                command = new ArrayList<>();
-                command.add(listScript);
-                Map<String, String> output = runProcess(command, 1);
-                assertTrue(output.get("out").contains(errorMessage));
-
-                // Run test on the migration script
-                command = new ArrayList<>();
-                command.add(migrateScript);
-                output = runProcess(command, 1);
-                assertTrue(output.get("out").contains(errorMessage));
-            } finally {
-                // Replace the version file with the original
-                versionPackage.delete();
-                Files.copy(Paths.get(EnvVars.getHome() + "/bin/version.properties"), versionPackage.toPath());
-                List<String> command = new ArrayList<>();
-                command.add("jar");
-                command.add("-uf");
-                command.add(EnvVars.getHome() + "/lib/dbb.core_" + version + ".jar");
-                command.add(versionPackage.getPath());
-                try {
-                    runProcess(command, 0);
-                } catch (Exception error) {
-                    throw new Exception("Failed to reset DBB version info back to original state.", error);
-                } finally {
-                    // Clear temp folder structure
-                    while (versionPackage != null) {
-                        versionPackage.delete();
-                        versionPackage = versionPackage.getParentFile();
-                    }
-                }
-            }
-            // Check version was reset properly
-            assertEquals(VersionInfo.getInstance().getVersion(), version);
-        }
-
-        @Test
-        @Order(2)
         void testWildcard() {
             System.out.println("Running group wildcard tests.");
             List<String> command = new ArrayList<>();
@@ -157,7 +156,7 @@ class StaticReportMigrationTests {
             command.add("--pwFile");
             command.add(passwordFile.getPath());
             command.add("--grp");
-            command.add(",*");
+            command.add("*");
 
             Map<String, String> output = runProcess(command, 0);
             Map<String, List<String>> expected = new HashMap<>();
@@ -167,7 +166,7 @@ class StaticReportMigrationTests {
         }
 
         @Test
-        @Order(3)
+        @Order(2)
         void testWildcardSingleSegment() {
             System.out.println("Running group wildcard single-segment tests.");
             List<String> command = new ArrayList<>();
@@ -190,7 +189,7 @@ class StaticReportMigrationTests {
         }
 
         @Test
-        @Order(6) // Execute last to prepare list for migration test
+        @Order(5) // Execute last to prepare list for migration test
         void testWildcardMultiSegment() {
             System.out.println("Running group wildcard multi-segment tests.");
             List<String> command = new ArrayList<>();
@@ -212,7 +211,7 @@ class StaticReportMigrationTests {
         }
 
         @Test
-        @Order(4)
+        @Order(3)
         void testExactMatch() {
             System.out.println("Running group exact match tests.");
             List<String> command = new ArrayList<>();
@@ -234,7 +233,7 @@ class StaticReportMigrationTests {
         }
 
         @Test
-        @Order(5)
+        @Order(4)
         void testFileMatch() {
             System.out.println("Running group from file tests.");
             List<String> command = new ArrayList<>();
@@ -261,7 +260,6 @@ class StaticReportMigrationTests {
     @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
     @Order(2)
     class MigrationTests {
-
         @Test
         void migrationTest() {
             System.out.println("Running migration test.");
