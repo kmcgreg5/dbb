@@ -179,7 +179,7 @@ private void filterBuildResults(List<BuildResult> results) {
             }
             return true;
         }
-        String content = Utils.readFromStream(.getContent(), "UTF-8");
+        String content = Utils.readFromStream(buildReport.getContent(), "UTF-8");
         if (content == null) {
             if (debug) {
                 System.out.println(String.format("Result '%s:%s' report has no content... Skipping.", result.getGroup(), result.getLabel()));
