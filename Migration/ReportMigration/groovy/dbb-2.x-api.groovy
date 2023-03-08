@@ -9,6 +9,7 @@ import com.ibm.dbb.build.BuildProperties;
 import com.ibm.dbb.build.internal.Utils;
 import com.ibm.dbb.build.BuildException;
 import com.ibm.dbb.build.VersionInfo;
+import com.ibm.dbb.metadata.Attachment;
 import com.ibm.json.java.JSONArray;
 import com.ibm.json.java.JSONObject;
 
@@ -171,15 +172,22 @@ private List<BuildResult> retrieveBuildResults(String group) {
  */
 private void filterBuildResults(List<BuildResult> results) {
     results.removeIf(result-> { // IO, Build
-        String content = Utils.readFromStream(result.getBuildReport().getContent(), "UTF-8");
+        Attachment buildReport = result.getBuildReport();
+        if (buildReport == null) {
+            if (debug) {
+                System.out.println(String.format("Result '%s:%s' has no report... Skipping.", result.getGroup(), result.getLabel()));
+            }
+            return true;
+        }
+        String content = Utils.readFromStream(.getContent(), "UTF-8");
         if (content == null) {
             if (debug) {
-                System.out.println(String.format("Result '%s:%s' has no content... Skipping.", result.getGroup(), result.getLabel()));
+                System.out.println(String.format("Result '%s:%s' report has no content... Skipping.", result.getGroup(), result.getLabel()));
             }
             return true;
         } else if (content.contains("</script>") == false) {
             if (debug) {
-                System.out.println(String.format("Result '%s:%s' has no script tag... Skipping.", result.getGroup(), result.getLabel()));
+                System.out.println(String.format("Result '%s:%s' report has no script tag... Skipping.", result.getGroup(), result.getLabel()));
             }
             return true;
         }
