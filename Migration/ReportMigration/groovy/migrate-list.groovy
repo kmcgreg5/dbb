@@ -78,6 +78,12 @@ try {
     System.exit(1);
 }
 
+/**
+ * Parses arguments, printing help and exiting if required.
+ * 
+ * @param args  The input arguments to parse.
+ * @return      An OptionAccessor at which to access the parsed options.
+ */
 private OptionAccessor getOptions(String[] args) {
     String usage = "migrate-list.sh <json-file> [options] [--help]";
     String header = "Using DBB version ${versionUtils.getVersion()}";
