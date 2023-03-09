@@ -7,8 +7,6 @@ import com.ibm.dbb.metadata.BuildResult.QueryParms;
 import com.ibm.dbb.build.report.BuildReport;
 import com.ibm.dbb.build.BuildProperties;
 import com.ibm.dbb.build.internal.Utils;
-import com.ibm.dbb.build.BuildException;
-import com.ibm.dbb.build.VersionInfo;
 import com.ibm.dbb.metadata.Attachment;
 import com.ibm.json.java.JSONArray;
 import com.ibm.json.java.JSONObject;
@@ -16,9 +14,6 @@ import com.ibm.json.java.JSONObject;
 import groovy.transform.Field;
 import java.nio.file.Path;
 import java.nio.file.Files;
-import groovy.cli.commons.CliBuilder;
-import org.apache.commons.cli.OptionGroup;
-import org.apache.commons.cli.Option;
 import java.util.stream.Collectors;
 
 @Field MetadataStore store = null;
@@ -179,6 +174,7 @@ private void filterBuildResults(List<BuildResult> results) {
             }
             return true;
         }
+
         String content = Utils.readFromStream(buildReport.getContent(), "UTF-8");
         if (content == null) {
             if (debug) {

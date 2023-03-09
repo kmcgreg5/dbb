@@ -11,7 +11,6 @@ import java.util.concurrent.TimeUnit;
 import java.lang.Thread;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
@@ -257,12 +256,16 @@ class StaticReportMigrationTests {
     }
 
     @Nested
-    @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
     @Order(2)
     class MigrationTests {
         @Test
         void migrationTest() {
             System.out.println("Running migration test.");
+            // Assert json file has correct content from the previous test class
+            Map<String, List<String>> expected = new HashMap<>();
+            expected.put(GROUP, Arrays.asList(LABEL));
+            validateMigrationList(jsonFile, expected);
+
             List<String> command = new ArrayList<>();
             command.add(migrateScript);
             command.add(jsonFile.getPath());

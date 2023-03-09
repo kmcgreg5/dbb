@@ -145,7 +145,7 @@ private OptionAccessor getOptions(String[] args) {
  * Collects groups from an input list and a file that seperates groups with newlines.
  * 
  * @param groupsArg     A list of groups passed in through the CLI, can be null.
- * @param groupsFileArg A file containing groups seperated by newlines, appended commas are removed to support CSV.
+ * @param groupsFileArg A file containing groups seperated by newlines.
  * @return              the list of groups gathered.
  */
 private List<String> collectGroups(List<String> groupsArg, File groupsFileArg) {
@@ -162,7 +162,6 @@ private List<String> collectGroups(List<String> groupsArg, File groupsFileArg) {
     if (groupsFileArg != null) {
         groupsFileArg.eachLine { group ->
             group = group.trim();
-            // Remove trailing comma in case a CSV is passed in.
             if (group.isEmpty()) return;
             if (groups.contains(group) == false) {
                 groups.add(group);
