@@ -48,7 +48,7 @@ The following options are required:
     * --grp or --grpf
 
 #### Step 2: Migrate List
-The second step is performed by invoking the `migrate-list.sh` script located in the bin directory. This script takes the migration list source and Db2 connection information as input. The input list is iterated over, regenerating and uploading the static HTML using the data stored in the result.
+The second step is performed by invoking the `migrate-list.sh` script located in the bin directory. This script takes the previously generated migration list and Db2 connection information as input. The input list is iterated over, regenerating and uploading the static HTML using the data stored in the result.
 ```
 usage: migrate-list.sh <json-list> [options] [--help]
 Using DBB version 2.0.0
