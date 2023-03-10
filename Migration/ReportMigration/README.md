@@ -22,7 +22,7 @@ The first step is performed by invoking the `create-migration-list.sh` script lo
 
 The input build groups are matched to those in the Metadata Store. Next, the Build Reports for these groups are then filtered to include only those with `</script>` tags in their HTML. This list is then output to a json file to be consumed in the next step.
 
-The generated list has the following format:
+The generated migration list has the following format:
 ```
 {
     "Group 1": ["result-label-1", "result-label-2", ...]
