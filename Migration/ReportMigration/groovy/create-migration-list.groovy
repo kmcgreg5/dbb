@@ -58,12 +58,12 @@ try {
         }
     }
     
-    List<String> groups = collectGroups(options.grps ?: null, options.grpf ? options.grpf as File : null);
+    List<String> groups = collectGroups(options.collections ?: null, options.collectionf ? options.collectionf as File : null);
     List<String> resultGroups = connectionScript.getBuildResultGroups();
     // Match input groups to collection groups
     groups = matchGroups(resultGroups, groups);
     if (groups.size() == 0) {
-        println("No groups matched.");
+        println("No collection matched.");
         System.exit(0);
     }
     
@@ -115,8 +115,8 @@ private OptionAccessor getOptions(String[] args) {
     // Group for groups
     OptionGroup groupGroup = new OptionGroup();
     groupGroup.setRequired(true);
-    groupGroup.addOption(parser.option("grp", [longOpt:"grp", args:Option.UNLIMITED_VALUES, valueSeparator:','], "A comma seperated list of groups with support for wildcard '*' matching."));
-    groupGroup.addOption(parser.option("grpf", [type:File, longOpt:"grpf", args:1], "A file containing groups seperated by new lines with support for wildcard '*' matching."));
+    groupGroup.addOption(parser.option("collection", [longOpt:"collection", args:Option.UNLIMITED_VALUES, valueSeparator:','], "A comma seperated list of collections with support for wildcard '*' matching."));
+    groupGroup.addOption(parser.option("collectionf", [type:File, longOpt:"collectionFile", args:1], "A file containing collections seperated by new lines with support for wildcard '*' matching."));
     parser.options.addOptionGroup(groupGroup);
 
     parser.debug(longOpt:"debug", 'Enables DBB logging and prints groups that are skipped.');
@@ -187,10 +187,10 @@ private List<String> matchGroups(List<String> resultGroups, List<String> groups)
     List<String> matchedGroups = new ArrayList<>();
     if (groups.contains("*")) {
         if (this.debug) {
-            println("Wildcard group entered, all results selected.");
+            println("Wildcard collection entered, all results selected.");
             if (groups.size() > 1) {
                 groups.remove("*");
-                println("Groups '${String.join(', ', groups)}' skipped.");
+                println("Collections '${String.join(', ', groups)}' skipped.");
             }
         }
         matchedGroups.addAll(resultGroups);
@@ -231,7 +231,7 @@ private List<String> matchGroups(List<String> resultGroups, List<String> groups)
             });
 
             if (partialMatches.isEmpty() && this.debug) {
-                println("Group '$group' did not match any stored result groups.");
+                println("Collection '$group' did not match any stored result groups.");
             }
 
         } else { // Exact match groups
@@ -240,7 +240,7 @@ private List<String> matchGroups(List<String> resultGroups, List<String> groups)
                 resultGroups.remove(group);
                 matchedGroups.add(group);
             } else if (this.debug) {
-                println("Group '$group' did not match any stored result groups.");
+                println("Collection '$group' did not match any stored result groups.");
             }
         }
     }
