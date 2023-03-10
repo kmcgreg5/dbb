@@ -21,6 +21,14 @@ The report migration is a two step process that includes scanning the Metadata S
 The first step is performed by invoking the `create-migration-list.sh` script located in the bin directory. This script takes the migration list destination, Db2 connection information, and the build groups to convert reports for as input.
 
 The input build groups are matched to those in the Metadata Store. Next, the Build Reports for these groups are then filtered to include only those with `</script>` tags in their HTML. This list is then output to a json file to be consumed in the next step.
+
+The generated list has the following format:
+```
+{
+    "Group 1": ["result-label-1", "result-label-2", ...]
+    "Group 2": ...
+}
+```
 ```
 usage: create-migration-list.sh <json-list> [options] [--help]
 Using DBB version 2.0.0
