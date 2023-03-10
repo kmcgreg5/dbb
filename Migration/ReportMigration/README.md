@@ -29,6 +29,7 @@ The generated list has the following format:
     "Group 2": ...
 }
 ```
+##### Usage:
 ```
 usage: create-migration-list.sh <json-list> [options] [--help]
 Using DBB version 2.0.0
