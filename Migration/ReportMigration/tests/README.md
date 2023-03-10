@@ -1,4 +1,4 @@
-# Report Migration Sample Tests
+# Report Migration Tests
 ### Overview
 This folder contains JUnit5 functional tests that covers the scripts standard use cases.
 
