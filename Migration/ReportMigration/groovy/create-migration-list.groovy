@@ -94,7 +94,7 @@ try {
  * @return      An OptionAccessor at which to access the parsed options.
  */
 private OptionAccessor getOptions(String[] args) {
-    String usage = "create-migration-list.sh <json-file> [options] [--help]";
+    String usage = "create-migration-list.sh <json-list> [options] [--help]";
     String header = "Using DBB version ${versionUtils.getVersion()}";
     CliBuilder parser = new CliBuilder(usage:usage, header:header, stopAtNonOption:false);
 
@@ -115,8 +115,8 @@ private OptionAccessor getOptions(String[] args) {
     // Group for groups
     OptionGroup groupGroup = new OptionGroup();
     groupGroup.setRequired(true);
-    groupGroup.addOption(parser.option("grp", [longOpt:"grp", args:Option.UNLIMITED_VALUES, valueSeparator:','], "A comma seperated list of groups."));
-    groupGroup.addOption(parser.option("grpf", [type:File, longOpt:"grpf", args:1], "A file containing groups seperated by new lines."));
+    groupGroup.addOption(parser.option("grp", [longOpt:"grp", args:Option.UNLIMITED_VALUES, valueSeparator:','], "A comma seperated list of groups with support for wildcard '*' matching."));
+    groupGroup.addOption(parser.option("grpf", [type:File, longOpt:"grpf", args:1], "A file containing groups seperated by new lines with support for wildcard '*' matching."));
     parser.options.addOptionGroup(groupGroup);
 
     parser.debug(longOpt:"debug", 'Enables DBB logging and prints groups that are skipped.');
