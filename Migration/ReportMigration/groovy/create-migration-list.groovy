@@ -130,7 +130,7 @@ private OptionAccessor getOptions(String[] args) {
         System.exit(1);
     }
     if (options.arguments().size() == 0) {
-        println("error: Positional argument, 'json-file', must be specified.");
+        println("error: Positional argument, 'json-list', must be specified.");
         parser.usage();
         System.exit(1);
     }

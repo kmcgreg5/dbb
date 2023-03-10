@@ -15,18 +15,22 @@ This sample provides a script to migrate DBB Build Reports containing javascript
 * tests/samples - Contains sample data for the test cases
 
 ### Migration Process
-The report migration is a two step process that includes scanning the Metadata Store for the requested collections to create a list of Build Reports to be migrated, and processing the list to generate static Build Reports.
+The report migration is a two step process that includes scanning the Metadata Store for the requested build groups to create a list of Build Reports to be migrated, and processing the list to generate static Build Reports.
 
 #### Create Migration List
-The first step is performed by invoking the create-migration-list.sh located in the bin directory. 
+The first step is performed by invoking the `create-migration-list.sh` script located in the bin directory. This script takes the migration list destination, DB2 connection information, and the build groups to convert reports for as input.
+
+The input build groups are matched to those in the Metadata Store. Next, the Build Reports for these groups are then filtered to include only those with `</script>` tags in their HTML. This list is then output to a json file to be consumed in the next step.
 ```
 usage: create-migration-list.sh <json-list> [options] [--help]
 Using DBB version 2.0.0
- -debug,--debug              Enables DBB logging and prints groups that
-                             are skipped.
- -grp,--grp <arg>            A comma seperated list of groups.
- -grpf,--grpf <arg>          A file containing groups seperated by new
-                             lines.
+ -debug,--debug              Enables DBB logging and prints groups and
+                             reports that are skipped.
+ -grp,--grp <arg>            A comma seperated list of build groups with
+                             support for wildcard '*' matching.
+ -grpf,--grpf <arg>          A file containing build groups seperated by
+                             new lines with support for wildcard '*'
+                             matching.
  -help,--help                Prints this message.
  -id,--id <arg>              Db2 Metadata Store user id.
  -props,--properties <arg>   Db2 Metadata Store connection properties.
@@ -35,3 +39,20 @@ Using DBB version 2.0.0
  -url,--url <arg>            Db2 Metadata Store URL. Example:
                              jdbc:db2:<Db2 server location>
 ```
+The following options are required:
+* Db2 Connection options:
+    * --id
+    * --url and/or --properties
+    * --pw or --pwFile
+* Group options:
+    * --grp or --grpf
+
+#### Migrate List
+The second step is performed by invoking the `migrate-list.sh` script located in the bin directory. This script takes the migration list source and Db2 connection information as input. The input list is iterated over, regenerating HTML with the data stored in the result.
+```
+```
+The following options are required:
+* Db2 Connection options:
+    * --id
+    * --url and/or --properties
+    * --pw or --pwFile
