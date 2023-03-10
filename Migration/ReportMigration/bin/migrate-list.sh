@@ -20,11 +20,11 @@ if [ -z "${DBB_HOME:+set}" ]; then
    exit 1
 fi
 
-for arg in "$@"
-do
-   case "$arg" in
-      --debug)    debug=-Dorg.slf4j.simpleLogger;;
-   esac
+# Process arguments
+for arg do
+    shift
+    [ "$arg" = "--debug" ] && debug=-Dorg.slf4j.simpleLogger
+    set -- "$@" "$arg"
 done
 
 SCRIPT_DIR=$(dirname "$0")

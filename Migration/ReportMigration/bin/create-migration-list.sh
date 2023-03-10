@@ -20,7 +20,7 @@ if [ -z "${DBB_HOME:+set}" ]; then
    exit 1
 fi
 
-# Best way of iterating through arguments I've found
+# Process arguments
 for arg do
     shift
     [ "$arg" = "--grp" ] && [ "$1" = "*" ] && shift && allmatch=true && continue 2
