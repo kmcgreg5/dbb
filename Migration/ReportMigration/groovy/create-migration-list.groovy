@@ -119,7 +119,7 @@ private OptionAccessor getOptions(String[] args) {
     groupGroup.addOption(parser.option("grpf", [type:File, longOpt:"grpf", args:1], "A file containing build groups seperated by new lines with support for wildcard '*' matching."));
     parser.options.addOptionGroup(groupGroup);
 
-    parser.debug(longOpt:"debug", 'Enables DBB logging and prints groups that are skipped.');
+    parser.debug(longOpt:"debug", 'Enables DBB logging and prints groups and reports that are skipped.');
     parser.help(longOpt:"help", 'Prints this message.');
     
     OptionAccessor options = parser.parse(args);
