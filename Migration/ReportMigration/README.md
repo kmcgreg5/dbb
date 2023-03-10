@@ -1,9 +1,10 @@
 # Report Migration Sample
 ### Overview
-This sample provides a script to migrate DBB Build Reports containing javascript to static versions. This script is a combination of Unix shell scripts and Apache Groovy scripts.
+This sample provides a script to migrate DBB Build Reports containing javascript to static versions. This script is a combination of Unix shell scripts and Apache Groovy scripts. 
 
 ### Prerequisites
-* DBB Toolkit
+For a version of this script compatible with DBB 1.x, use the dbb_1_x branch.
+* DBB Toolkit 2.x
     * DBB_HOME environment variable must be set
 * IBM Java v8 64bit
     * JAVA_HOME environment variable must be set
@@ -11,8 +12,7 @@ This sample provides a script to migrate DBB Build Reports containing javascript
 ### Folder Content
 * bin - Contains the shell scripts that drive the migration process
 * groovy - Contains Groovy/DBB scripts that are invoked by the shell scripts
-* tests - Contains JUnit functional test cases for the sample
-* tests/samples - Contains sample data for the test cases
+* tests - Contains JUnit functional test cases for the sample, further documentation included within.
 
 ### Migration Process
 The report migration is a two step process that includes scanning the Metadata Store for the requested build groups to create a list of Build Reports to be migrated, and processing the list to generate static Build Reports.
