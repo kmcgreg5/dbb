@@ -4,10 +4,12 @@ This folder contains JUnit5 functional tests that covers the scripts standard us
 
 ### Prerequisites
 For a version of these tests compatible with DBB 1.x, use the `dbb_1_x` branch.
-* DBB Toolkit 2.x
+* DBB Toolkit V2.0.0
     * DBB_HOME environment variable must be set
 * IBM Java v8 64bit
     * JAVA_HOME environment variable must be set
+
+NOTE: For migrating Build Reports stored in the DBB 1.x Repository Client, use the Report Migration Sample located in this repository's `dbb_1_x` branch.
 
 ### Folder Content
 * samples - Contains sample data for the test cases
