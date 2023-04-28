@@ -287,8 +287,10 @@ public Map<String, List<String>> readMigrationList(File jsonFile) {
     } else {
         list = new HashMap<>();
         json.keySet().stream().forEach(key -> {
+            System.out.println(key);
             List<String> jsonList = new ArrayList();
             json.getAsJsonArray(key).forEach(value -> {
+                System.out.println(value);
                 jsonList.add(value.getAsString());
             });
             list.put(key, jsonList);
