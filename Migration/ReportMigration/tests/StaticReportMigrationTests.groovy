@@ -335,7 +335,18 @@ class StaticReportMigrationTests {
         }
 
         // Normalize json object
-        Map<String, List<String>> jsonMap = json.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        Map<String, List<String>> jsonMap;
+        if (versionIsTwo) {
+            jsonMap = json.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        } else {
+            json.keySet().stream().forEach(key -> {
+                List<String> list = new ArrayList();
+                json.getAsJsonArray(key).forEach(value -> {
+                    list.add(value.getAsString());
+                });
+                jsonMap.put(key, list);
+            });
+        }
 
         expected.forEach((key, value) -> {
             assertTrue(jsonMap.containsKey(key));
