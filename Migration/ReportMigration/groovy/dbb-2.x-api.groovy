@@ -290,6 +290,7 @@ public Map<String, List<String>> readMigrationList(File jsonFile) {
             System.out.println(key);
             List<String> jsonList = new ArrayList();
             json.getAsJsonArray(key).forEach(value -> {
+                System.out.println(value.getAsString());
                 System.out.println(value);
                 jsonList.add(value.getAsString());
             });
