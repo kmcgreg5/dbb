@@ -339,6 +339,7 @@ class StaticReportMigrationTests {
         if (versionIsTwo) {
             jsonMap = json.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         } else {
+            jsonMap = new HashMap<>();
             json.keySet().stream().forEach(key -> {
                 List<String> list = new ArrayList();
                 json.getAsJsonArray(key).forEach(value -> {
