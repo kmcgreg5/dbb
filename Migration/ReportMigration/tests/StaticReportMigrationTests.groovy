@@ -158,8 +158,8 @@ class StaticReportMigrationTests {
 
             Map<String, String> output = runProcess(command, 0);
             Map<String, List<String>> expected = new HashMap<>();
-            expected.put(GROUP, Arrays.asList('"' + LABEL + '"'));
-            expected.put(GROUP2, Arrays.asList('"' + LABEL + '"'));
+            expected.put(GROUP, Arrays.asList(LABEL));
+            expected.put(GROUP2, Arrays.asList(LABEL));
             validateMigrationList(jsonFile, expected);
         }
 
@@ -181,8 +181,8 @@ class StaticReportMigrationTests {
 
             Map<String, String> output = runProcess(command, 0);
             Map<String, List<String>> expected = new HashMap<>();
-            expected.put(GROUP, Arrays.asList('"' + LABEL + '"'));
-            expected.put(GROUP2, Arrays.asList('"' + LABEL + '"'));
+            expected.put(GROUP, Arrays.asList(LABEL));
+            expected.put(GROUP2, Arrays.asList(LABEL));
             validateMigrationList(jsonFile, expected);
         }
 
@@ -204,7 +204,7 @@ class StaticReportMigrationTests {
 
             Map<String, String> output = runProcess(command, 0);
             Map<String, List<String>> expected = new HashMap<>();
-            expected.put(GROUP2, Arrays.asList('"' + LABEL + '"'));
+            expected.put(GROUP2, Arrays.asList(LABEL));
             validateMigrationList(jsonFile, expected);
         }
 
@@ -226,8 +226,8 @@ class StaticReportMigrationTests {
 
             Map<String, String> output = runProcess(command, 0);
             Map<String, List<String>> expected  = new HashMap<>();
-            expected.put(GROUP, Arrays.asList('"' + LABEL + '"'));
-            expected.put(GROUP2, Arrays.asList('"' + LABEL + '"'));
+            expected.put(GROUP, Arrays.asList(LABEL));
+            expected.put(GROUP2, Arrays.asList(LABEL));
             validateMigrationList(jsonFile, expected);
         }
 
@@ -249,7 +249,7 @@ class StaticReportMigrationTests {
 
             Map<String, String> output = runProcess(command, 0);
             Map<String, List<String>> expected = new HashMap<>();
-            expected.put(GROUP, Arrays.asList('"' + LABEL + '"'));
+            expected.put(GROUP, Arrays.asList(LABEL));
             validateMigrationList(jsonFile, expected);
         }
     }
@@ -262,7 +262,7 @@ class StaticReportMigrationTests {
             System.out.println("Running migration test.");
             // Assert json file has correct content from the previous test class
             Map<String, List<String>> expected = new HashMap<>();
-            expected.put(GROUP, Arrays.asList('"' + LABEL + '"'));
+            expected.put(GROUP, Arrays.asList(LABEL));
             validateMigrationList(jsonFile, expected);
 
             List<String> command = new ArrayList<>();
@@ -333,21 +333,12 @@ class StaticReportMigrationTests {
             
         }
 
+        // Normalize json object
+        Map<String, List<String>> jsonMap = json.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
         expected.forEach((key, value) -> {
-            boolean containsKey;
-            if (versionIsTwo) {
-                containsKey = json.containsKey(key);
-            } else {
-                containsKey = json.has(key);
-            }
-            assertTrue(containsKey);
-            def list;
-            if (versionIsTwo) {
-                list = json.get(key);
-            } else {
-                list = json.getAsJsonArray(key);
-            }
-            assertIterableEquals(value, list);
+            assertTrue(jsonMap.containsKey(key));
+            assertIterableEquals(value, jsonMap.get(key));
         });
         assertTrue(json.size() == expected.size());
     }
