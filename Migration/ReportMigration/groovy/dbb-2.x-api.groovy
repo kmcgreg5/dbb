@@ -281,6 +281,18 @@ public Map<String, List<String>> readMigrationList(File jsonFile) {
         }
     }
 
-    Map<String, List<String>> list = json.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    Map<String, List<String>> list;
+    if (versionIsTwo) {
+        list = json.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    } else {
+        list = new HashMap<>();
+        json.keySet().stream().forEach(key -> {
+            List<String> jsonList = new ArrayList();
+            json.getAsJsonArray(key).forEach(value -> {
+                jsonList.add(value.getAsString());
+            });
+            list.put(key, jsonList);
+        });
+    }
     return list;
 }
