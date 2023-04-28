@@ -279,6 +279,9 @@ public Map<String, List<String>> readMigrationList(File jsonFile) {
             def gson = Class.forName("com.google.gson.GsonBuilder").newInstance().setPrettyPrinting().create();
             json = gson.fromJson(reader, Class.forName("com.google.gson.JsonObject"));
         }
+        reader.lines().forEach(value -> {
+            System.out.println(value);
+        });
     }
 
     Map<String, List<String>> list;
