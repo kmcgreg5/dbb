@@ -8,8 +8,7 @@ import com.ibm.dbb.build.report.BuildReport;
 import com.ibm.dbb.build.BuildProperties;
 import com.ibm.dbb.build.internal.Utils;
 import com.ibm.dbb.metadata.Attachment;
-import com.ibm.json.java.JSONArray;
-import com.ibm.json.java.JSONObject;
+import com.ibm.dbb.build.VersionInfo;
 
 import groovy.transform.Field;
 import java.nio.file.Path;
@@ -212,21 +211,55 @@ public void setDebug(boolean on) {
  * @param results   The results to include in the list.
  */
 public void createMigrationList(File jsonFile, List<BuildResult> results) {
+    boolean versionIsTwo = VersionInfo.getInstance().getVersion() == "2.0.0";
     // Create JSON Object
-    JSONObject json = new JSONObject();
+    def json;
+    if (versionIsTwo) {
+        json = Class.forName("com.ibm.json.java.JSONObject").newInstance();
+    } else {
+        json = Class.forName("com.google.gson.JsonObject").newInstance();
+    }
+
     for (BuildResult result : results) {
-        if (json.containsKey(result.getGroup())) {
-            JSONArray list = json.get(result.getGroup());
+        boolean containsKey;
+        if (versionIsTwo) {
+            containsKey = json.containsKey(result.getGroup());
+        } else {
+            containsKey = json.has(result.getGroup());
+        }
+
+        if (containsKey) {
+            def list;
+            if (versionIsTwo) {
+                list = json.get(result.getGroup());
+            } else {
+                list = json.getAsJsonArray(result.getGroup());
+            }
             list.add(result.getLabel());
         } else {
-            JSONArray list = new JSONArray();
+            def list;
+            if (versionIsTwo) {
+                list = Class.forName("com.ibm.json.java.JSONArray").newInstance();
+            } else {
+                list = Class.forName("com.google.gson.JsonArray").newInstance();
+            }
             list.add(result.getLabel());
-            json.put(result.getGroup(), list);
+            if (versionIsTwo) {
+                json.put(result.getGroup(), list);
+            } else {
+                json.add(result.getGroup(), list);
+            }
+            
         }
     }
     // Write JSON to file
     try (BufferedWriter writer = new BufferedWriter(new FileWriter(jsonFile))) {
-        writer.write(json.serialize(true));
+        if (versionIsTwo) {
+            writer.write(json.serialize(true));
+        } else {
+            def gson = Class.forName("com.google.gson.GsonBuilder").newInstance().setPrettyPrinting().create();
+            gson.toJson(json, writer);
+        }
     }
 }
 
@@ -237,9 +270,15 @@ public void createMigrationList(File jsonFile, List<BuildResult> results) {
  * @return          A Map containing the info from the input json file.
  */
 public Map<String, List<String>> readMigrationList(File jsonFile) {
-    JSONObject json;
+    boolean versionIsTwo = VersionInfo.getInstance().getVersion() == "2.0.0";
+    def json;
     try (BufferedReader reader = new BufferedReader(new FileReader(jsonFile))) {
-        json = JSONObject.parse(reader);
+        if (versionIsTwo) {
+            json = Class.forName("com.ibm.json.java.JSONObject").parse(reader);
+        } else {
+            def gson = Class.forName("com.google.gson.GsonBuilder").newInstance().setPrettyPrinting().create();
+            json = gson.fromJson(reader, Class.forName("com.google.gson.JsonObject"));
+        }
     }
 
     Map<String, List<String>> list = json.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
