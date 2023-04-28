@@ -4,7 +4,6 @@ import com.ibm.dbb.metadata.BuildResult;
 import com.ibm.dbb.metadata.BuildResult.QueryParms;
 import com.ibm.dbb.EnvVars;
 import com.ibm.dbb.build.internal.Utils;
-import com.ibm.json.java.JSONObject;
 import com.ibm.dbb.build.VersionInfo;
 
 import java.util.concurrent.TimeUnit;
@@ -322,14 +321,33 @@ class StaticReportMigrationTests {
     }
 
     private void validateMigrationList(File jsonFile, Map<String, List<String>> expected) {
-        JSONObject json;
+        boolean versionIsTwo = VersionInfo.getInstance().getVersion() == "2.0.0";
+        def json;
         try (BufferedReader reader = new BufferedReader(new FileReader(jsonFile))) {
-            json = JSONObject.parse(reader);
+            if (versionIsTwo) {
+                json = Class.forName("com.ibm.json.java.JSONObject").parse(reader);
+            } else {
+                def gson = Class.forName("com.google.gson.GsonBuilder").newInstance().setPrettyPrinting().create();
+                json = gson.fromJson(reader, Class.forName("com.google.gson.JsonObject"));
+            }
+            
         }
 
         expected.forEach((key, value) -> {
-            assertTrue(json.containsKey(key));
-            assertIterableEquals(value, json.get(key));
+            boolean containsKey;
+            if (versionIsTwo) {
+                containsKey = json.containsKey(key);
+            } else {
+                containsKey = json.has(key);
+            }
+            assertTrue(containsKey);
+            def list;
+            if (versionIsTwo) {
+                list = json.get(key);
+            } else {
+                list = json.getAsJsonArray(key);
+            }
+            assertIterableEquals(value, list);
         });
         assertTrue(json.size() == expected.size());
     }
