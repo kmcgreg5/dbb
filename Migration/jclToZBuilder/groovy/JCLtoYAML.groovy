@@ -291,7 +291,10 @@ steps.each { step ->
 
 YAMLoutput(configuration)
 println YAMLoutput.toString()
-YAMLoutput.writeTo(new FileWriter("test.yaml"))
+try (FileOutputStream stream = new FileOutputStream(new File(outputDir, "test.yaml"));
+		OutputStreamWriter writer = new OutputStreamWriter(stream, StandardCharsets.UTF_8)) {
+	YAMLoutput.writeTo(writer)
+}
 
 
 def generateDSN(def concat) {
